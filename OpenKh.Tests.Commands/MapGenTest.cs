@@ -1,4 +1,4 @@
-﻿using OpenKh.Common;
+using OpenKh.Common;
 using OpenKh.Kh2;
 using System.IO;
 using System.Linq;
@@ -18,6 +18,8 @@ namespace OpenKh.Tests.Commands
         [InlineData("res/mapgen/terrain/terrain.fbx")]
         public void TestMapGenUtil(string inputModel)
         {
+            System.Threading.Thread.CurrentThread.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
             var outMap = Path.ChangeExtension(inputModel, ".map");
             using var disposer = new FileDisposer(outMap);
 
