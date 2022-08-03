@@ -1,9 +1,12 @@
-[submodule "nQuant"]
-	path = nQuant
-	url = https://github.com/krokettenkoal/nQuant-Unity
-[submodule "XeEngine.Tools.Public"]
-	path = XeEngine.Tools.Public
-	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
-[submodule "Ionic.Zlib.Unity"]
-	path = Ionic.Zlib.Unity
+[submodule "tools/symlink-utility"]
+	path = tools/symlink-utility
+	url = https://github.com/karl-/unity-symlink-utility
+[submodule "src/Ionic.Zlib"]
+	path = src/Ionic.Zlib
 	url = https://github.com/krokettenkoal/Ionic.Zlib.Unity
+[submodule "src/nQuant"]
+	path = src/nQuant
+	url = https://github.com/krokettenkoal/nQuant-Unity
+[submodule "src/XeEngine.Tools.Public"]
+	path = src/XeEngine.Tools.Public
+	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
