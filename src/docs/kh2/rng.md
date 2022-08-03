@@ -1,3 +1,0 @@
-# Random Generated Number
-
-Unknown.
