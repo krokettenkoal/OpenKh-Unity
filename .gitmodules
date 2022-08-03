@@ -1,6 +1,6 @@
 [submodule "XeEngine.Tools.Public"]
 	path = XeEngine.Tools.Public
-	url = https://github.com/Xeeynamo/XeEngine.Tools.Public
+	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
 [submodule "nQuant"]
 	path = nQuant
-	url = https://github.com/OpenKH/nQuant.git
+	url = https://github.com/krokettenkoal/nQuant-Unity
