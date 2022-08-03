@@ -1,6 +1,3 @@
-[submodule "tools/symlink-utility"]
-	path = tools/symlink-utility
-	url = https://github.com/karl-/unity-symlink-utility
 [submodule "src/Ionic.Zlib"]
 	path = src/Ionic.Zlib
 	url = https://github.com/krokettenkoal/Ionic.Zlib.Unity
