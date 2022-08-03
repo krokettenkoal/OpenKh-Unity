@@ -63,7 +63,7 @@ namespace OpenKh.Egs
             .Concat(EgsHdAsset.Launcher28Names)
             .Concat(new string[] { "dummy.txt" })
             .Distinct()
-            .ToDictionary(x => Helpers.ToString(MD5.HashData(Encoding.UTF8.GetBytes(x))), x => x);
+            .ToDictionary(x => Helpers.ToString(MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(x))), x => x);
 
         #endregion
 
@@ -349,7 +349,7 @@ namespace OpenKh.Egs
                 bool RemasterExist = false;
 
                 Console.WriteLine($"Replacing original: {filename}!");
-                string RemasteredPath = completeFilePath.Replace("\\original\\","\\remastered\\");
+                string RemasteredPath = completeFilePath.Replace("\\original\\", "\\remastered\\");
                 if (Directory.Exists(RemasteredPath))
                 {
                     //Console.WriteLine($"Remastered Folder Exists! Path: {RemasteredPath}");
@@ -506,7 +506,7 @@ namespace OpenKh.Egs
                     List<string> tempremasteredNames = new List<string>(remasteredNames);
                     for (int i = 0; i < remasteredNames.Count; i++)
                     {
-                        var filename = "/-"  + i.ToString();
+                        var filename = "/-" + i.ToString();
                         if (remasteredNames.Contains(filename + ".dds"))
                         {
                             //Console.WriteLine(filename + ".dds" + "FOUND!");
@@ -669,7 +669,7 @@ namespace OpenKh.Egs
                 case (".tm2", true):
                     asset = new TM2(originalAssetData, 0);
                     break;
-                //case (".dpd", true): //Special file, fix later
+                    //case (".dpd", true): //Special file, fix later
                     //asset = new DPD(originalAssetData);
                     //break;
             }
@@ -735,7 +735,7 @@ namespace OpenKh.Egs
         {
             using MemoryStream ms = new MemoryStream(AssetData);
 
-            
+
             int magic = ms.ReadInt32();
             if (magic != 1514622281 && AssetOffset == 0)
             { //IMGZ
@@ -746,7 +746,7 @@ namespace OpenKh.Egs
             ms.ReadInt64(); //unknown
             int TexCount = ms.ReadInt32(); //texture count
 
-            for (int i = 0; i < TexCount; i++) 
+            for (int i = 0; i < TexCount; i++)
             {
                 ms.Seek(0x10 + (i * 0x8), SeekOrigin.Begin);
                 int IMDoffset = ms.ReadInt32(); //Offset for IMGD data
@@ -870,7 +870,7 @@ namespace OpenKh.Egs
                 }
                 //Add our current list of offsets from the dpd to our main ffsets list
                 Offsets.AddRange(TempOffsets.Values);
-                foreach (Tuple<string,int> PT in TempScanPAX.Values)
+                foreach (Tuple<string, int> PT in TempScanPAX.Values)
                     ScanPAX.Add(PT.Item1, PT.Item2);
 
                 //then clear the temp list for the next dpd
@@ -914,7 +914,7 @@ namespace OpenKh.Egs
 
         public int TextureCount = 0;
         public bool Invalid = false;
-        
+
         public BAR(byte[] originalAssetData)
         {
             dynamic subasset;
@@ -1291,12 +1291,12 @@ namespace OpenKh.Egs
             {
                 ms.Seek(index + 0x0a, SeekOrigin.Begin);
                 int imageToApplyTo = (int)ms.ReadInt16();
-            
+
                 ms.Seek(0x1c, SeekOrigin.Current);
                 int texaOffset = ms.ReadInt32();
                 int offset = index + texaOffset + 0x08 + (imageToApplyTo * 0x10) + 0x20000000;
                 Offsets.Add(AssetOffset + offset);
-            
+
                 TextureCount++;
                 index = Helpers.IndexOfByteArray(AssetData, System.Text.Encoding.UTF8.GetBytes("TEXA"), index + 1);
             }
@@ -1361,5 +1361,5 @@ namespace OpenKh.Egs
             }
         }
     }
- 
+
 }
