@@ -1,9 +1,9 @@
-[submodule "XeEngine.Tools.Public"]
-	path = XeEngine.Tools.Public
-	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
 [submodule "nQuant"]
 	path = nQuant
 	url = https://github.com/krokettenkoal/nQuant-Unity
+[submodule "XeEngine.Tools.Public"]
+	path = XeEngine.Tools.Public
+	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
 [submodule "Ionic.Zlib"]
 	path = Ionic.Zlib
 	url = https://github.com/jstedfast/Ionic.Zlib
