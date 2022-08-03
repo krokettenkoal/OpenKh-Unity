@@ -4,6 +4,6 @@
 [submodule "XeEngine.Tools.Public"]
 	path = XeEngine.Tools.Public
 	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
-[submodule "Ionic.Zlib"]
-	path = Ionic.Zlib
-	url = https://github.com/jstedfast/Ionic.Zlib
+[submodule "Ionic.Zlib.Unity"]
+	path = Ionic.Zlib.Unity
+	url = https://github.com/krokettenkoal/Ionic.Zlib.Unity
