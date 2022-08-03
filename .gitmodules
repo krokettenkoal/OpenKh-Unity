@@ -4,3 +4,6 @@
 [submodule "nQuant"]
 	path = nQuant
 	url = https://github.com/krokettenkoal/nQuant-Unity
+[submodule "Ionic.Zlib"]
+	path = Ionic.Zlib
+	url = https://github.com/jstedfast/Ionic.Zlib
