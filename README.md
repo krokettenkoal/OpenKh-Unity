@@ -7,4 +7,4 @@ To install the package, simply clone the repository into your Unity project's `A
 The package is planned to be available in the Unity asset store at some point in the future.
 
 ## Documentation
-Check out [OpenKh on GitHub](https://github.com/OpenKH/OpenKh) or [openkh.dev](https://openkh.dev) for the OpenKh documentation. Unity-specific documentation for this package is not available at the moment.
+Check out [OpenKh on GitHub](https://github.com/OpenKH/OpenKh/#documentation) or [openkh.dev](https://openkh.dev) for the OpenKh documentation. Unity-specific documentation for this package is not available at the moment.
