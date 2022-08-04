@@ -1,9 +1,9 @@
-[submodule "src/Ionic.Zlib"]
-	path = src/Ionic.Zlib
+[submodule "Ionic.Zlib.Unity"]
+	path = Ionic.Zlib.Unity
 	url = https://github.com/krokettenkoal/Ionic.Zlib.Unity
-[submodule "src/nQuant"]
-	path = src/nQuant
+[submodule "nQuant-Unity"]
+	path = nQuant-Unity
 	url = https://github.com/krokettenkoal/nQuant-Unity
-[submodule "src/XeEngine.Tools.Public"]
-	path = src/XeEngine.Tools.Public
+[submodule "XeEngine.Tools.Unity.Public"]
+	path = XeEngine.Tools.Unity.Public
 	url = https://github.com/krokettenkoal/XeEngine.Tools.Unity.Public
