@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/OpenKh/Editor/OpenKh.UnityEditor.IdxImg/IdxImg.uss?fileID=7433441132597879392&amp;guid=58926d26d0835cb46866ec67732fb5ca&amp;type=3#IdxImg" />
+    <uie:Toolbar>
+        <uie:ToolbarButton text="Open.." name="OpenFiles" />
+        <uie:ToolbarButton text="Import assets" name="ImportAssets" />
+    </uie:Toolbar>
+</ui:UXML>
