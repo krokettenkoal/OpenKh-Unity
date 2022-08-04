@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using OpenCover.Framework.Model;
+using OpenKh.Kh2;
+using OpenKh.Tools.IdxImg;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace OpenKh.UnityEditor
+namespace OpenKh.Unity.Tools
 {
     // Base class for all windows that display planet information.
     public class FileHierarchyWindow : EditorWindow
@@ -18,11 +22,14 @@ namespace OpenKh.UnityEditor
     // Nested interface that can be either a an asset or a folder.
     protected interface IFolderOrFile
     {
+        public int Id
+        {
+            get;
+        }
         public string Name
         {
             get;
         }
-
         public bool Import
         {
             get;
@@ -36,6 +43,10 @@ namespace OpenKh.UnityEditor
     [Serializable]
     protected class FileEntry : IFolderOrFile
     {
+        public int Id
+        {
+            get;
+        }
         public string Name
         {
             get;
@@ -47,11 +58,15 @@ namespace OpenKh.UnityEditor
             set;
         }
 
-        public TreeViewItemData<IFolderOrFile> ItemData => new(++m_Index, this);
+        public Idx.Entry Data { get; }
 
-        public FileEntry(string name, bool import = false)
+        public TreeViewItemData<IFolderOrFile> ItemData => new(Id, this);
+
+        public FileEntry(string name, Idx.Entry data, int id, bool import = false)
         {
+            Id = id;
             Name = name;
+            Data = data;
             Import = import;
         }
     }
@@ -60,6 +75,10 @@ namespace OpenKh.UnityEditor
     [Serializable]
     protected class FolderEntry : IFolderOrFile
     {
+        public int Id
+        {
+            get;
+        }
         public string Name
         {
             get;
@@ -80,74 +99,75 @@ namespace OpenKh.UnityEditor
             }
         }
 
-        public TreeViewItemData<IFolderOrFile> ItemData => new(++m_Index, this, Children.Select(a => a.ItemData).ToList());
+        public TreeViewItemData<IFolderOrFile> ItemData => new(Id, this, Children.OrderBy(c => c.Name).Select(a => a.ItemData).ToList());
 
-        public readonly IReadOnlyList<IFolderOrFile> Children;
+        public List<IFolderOrFile> Children;
 
-        public FolderEntry(string name, IReadOnlyList<IFolderOrFile> children)
+        public FolderEntry(string name, int id, List<IFolderOrFile> children = null)
         {
+            Id = id;
             Name = name;
-            Children = children;
+            Children = children ?? new List<IFolderOrFile>();
         }
     }
 
-    // Folders inside the IMG file
-    protected static List<FolderEntry> Folders = new()
-    {
-        new FolderEntry("anm", new List<IFolderOrFile>()
-        {
-            new FolderEntry("ex", new List<IFolderOrFile>()
-            {
-                new FolderEntry("p_ex_100", new List<FileEntry>()
-                {
-                    new("EEX00001C.anb"),
-                    new("EEX00002C.anb"),
-                    new("EEX00003C.anb"),
-                    new("EEX00004C.anb"),
-                    new("EEX00005C.anb"),
-                    new("EEX00006C.anb"),
-                    new("EEX00007C.anb"),
-                    new("EEX00008C.anb"),
-                    new("EEX00009C.anb"),
-                    new("EEX00010C.anb"),
-                })
-            }),
-            new FolderEntry("ex_r", new List<IFolderOrFile>()
-            {
-                new FolderEntry("w_ex_010", new List<FileEntry>()
-                {
-                    new("EEX00001C.anb"),
-                    new("EEX00002C.anb"),
-                    new("EEX00003C.anb"),
-                    new("EEX00004C.anb"),
-                    new("EEX00005C.anb"),
-                    new("EEX00006C.anb"),
-                    new("EEX00007C.anb"),
-                    new("EEX00008C.anb"),
-                    new("EEX00009C.anb"),
-                    new("EEX00010C.anb"),
-                })
-            })
-
-        }),
-
-        new FolderEntry("obj", new List<FileEntry>()
-        {
-            new("P_EX100.mdlx"),
-            new("P_EX100.mset"),
-            new("P_EX100.a.us"),
-        }),
-
-    };
+    // Representation of the IDX file hierarchy
+    protected static IReadOnlyList<FolderEntry> Hierarchy { get; private set; } = new List<FolderEntry>();
 
     //  Expresses folders and files as TreeViewItemData objects
-    protected static IList<TreeViewItemData<IFolderOrFile>> TreeNodes
+    protected static IList<TreeViewItemData<IFolderOrFile>> TreeHierarchy
     {
         get
         {
             m_Index = -1;
-            return Folders.Select(f => f.ItemData).ToList();
+            return Hierarchy.Select(node => node.ItemData).ToList();
         }
+    }
+
+    protected static void SetHierarchyFromIdx(string idxFileName, List<Idx.Entry> entries)
+    {
+        var id = 0;
+        var root = new FolderEntry(idxFileName, id++);
+        var hierarchy = new List<FolderEntry>(1) { root };
+        var fileNameTester = new Regex(@"^\w\+.\w+$");
+
+        foreach (var entry in entries)
+        {
+            var segments = entry.GetFullName().Split('/');
+            var parent = root;
+
+            foreach (var segment in segments)
+            {
+                var idx = parent.Children.FindIndex(f => f.Name == segment);
+
+                if (idx == -1)
+                {
+                    if (fileNameTester.IsMatch(segment))
+                    {
+                        //  Create FileEntry
+                        parent.Children.Add(new FileEntry(segment, entry, id++));
+                        break;
+                    }
+
+                    //  Create FolderEntry and continue crawling
+                    var folder = new FolderEntry(segment, id++);
+                    parent.Children.Add(folder);
+                    parent = folder;
+                }
+                else
+                {
+                    if (parent.Children[idx] is FileEntry)
+                        break; // File already existing (should not be the case)
+
+                    if (parent.Children[idx] is not FolderEntry f)
+                        break; // Neither File nor Folder (should not be the case either)
+
+                    parent = f;
+                }
+            }
+        }
+
+        Hierarchy = hierarchy;
     }
 }
 }

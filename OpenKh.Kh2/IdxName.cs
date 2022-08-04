@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using OpenKh.Unity;
 
 namespace OpenKh.Kh2
 {
     public class IdxName
     {
-        private static string _filenameDictionary = Path.Combine(UnityEngine.Application.dataPath, "OpenKh/src/OpenKh.Kh2/resources/kh2idx.txt");
+        private static string _filenameDictionary = Path.Combine(PackageInfo.PackageRoot, "OpenKh.Kh2/resources/kh2idx.txt");
 
         public static string[] Names = File.ReadAllLines(_filenameDictionary);
 

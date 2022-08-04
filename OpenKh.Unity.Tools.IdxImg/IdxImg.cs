@@ -9,7 +9,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace OpenKh.UnityEditor.IdxImg
+namespace OpenKh.Unity.Tools.IdxImg
 {
     public class IdxImg : FileHierarchyWindow
     {
@@ -52,12 +52,13 @@ namespace OpenKh.UnityEditor.IdxImg
             var root = rootVisualElement;
 
             InitViews(root);
-            BindViews(TreeNodes);
+            BindViews(TreeHierarchy);
             AddListeners();
         }
 
-        private void OpenFiles()
+        private void OpenIdxImgFiles()
         {
+            //  Select IDX file
             string idxFilePath;
             do
             {
@@ -68,6 +69,7 @@ namespace OpenKh.UnityEditor.IdxImg
             if (string.IsNullOrEmpty(idxFilePath))
                 return;     // Cancelled by user
 
+            //  Select IMG file
             string imgFilePath;
             do
             {
@@ -78,13 +80,16 @@ namespace OpenKh.UnityEditor.IdxImg
             if (string.IsNullOrEmpty(imgFilePath))
                 return;     // Cancelled by user
             
-            Debug.Log($"Opening IDX ({idxFilePath}) and IMG ({imgFilePath})");
+            //Debug.Log($"Opening IDX ({idxFilePath}) and IMG ({imgFilePath})");
 
+            //  Validate & read IDX file
             using var idxStream = File.OpenRead(idxFilePath);
             if (!Idx.IsValid(idxStream))
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
             var idx = Idx.Read(idxStream);
 
+
+            //  Read IMG file
             _imgStream?.Dispose();
             _imgStream = File.OpenRead(imgFilePath);
             _img = new Img(_imgStream, idx, false);
@@ -92,15 +97,14 @@ namespace OpenKh.UnityEditor.IdxImg
             _idxFilePath = idxFilePath;
             _imgFilePath = imgFilePath;
 
-            foreach (var idxEntry in idx)
-            {
-                Debug.Log(idxEntry.GetFullName());
-            }
+            SetHierarchyFromIdx(Path.GetFileName(_idxFilePath), idx);
+            m_Tree.SetRootItems(TreeHierarchy);
+            m_Tree.Rebuild();
         }
 
         private void ImportAssets()
         {
-            foreach (var folder in Folders)
+            foreach (var folder in Hierarchy)
             {
                 ImportAsset(folder);
             }
@@ -173,7 +177,7 @@ namespace OpenKh.UnityEditor.IdxImg
         }
         private void AddListeners()
         {
-            m_OpenFile.clicked += OpenFiles;
+            m_OpenFile.clicked += OpenIdxImgFiles;
             m_ImportAssets.clicked += ImportAssets;
         }
         private void ToggleImport(IFolderOrFile entry, ChangeEvent<bool> ev)
