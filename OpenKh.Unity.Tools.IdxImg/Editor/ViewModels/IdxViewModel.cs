@@ -1,11 +1,9 @@
 using OpenKh.Kh2;
-using OpenKh.Tools.IdxImg.Interfaces;
+using OpenKh.Unity.Tools.IdxImg.Interfaces;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace OpenKh.Tools.IdxImg.ViewModels
+namespace OpenKh.Unity.Tools.IdxImg.ViewModels
 {
     public class IdxViewModel : NodeViewModel
     {

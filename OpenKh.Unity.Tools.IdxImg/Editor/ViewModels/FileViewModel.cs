@@ -1,9 +1,9 @@
 using OpenKh.Common;
 using OpenKh.Kh2;
-using OpenKh.Tools.IdxImg.Interfaces;
+using OpenKh.Unity.Tools.IdxImg.Interfaces;
 using System.IO;
 
-namespace OpenKh.Tools.IdxImg.ViewModels
+namespace OpenKh.Unity.Tools.IdxImg.ViewModels
 {
     public class FileViewModel : EntryViewModel
     {
@@ -21,6 +21,8 @@ namespace OpenKh.Tools.IdxImg.ViewModels
             get => Entry.IsStreamed;
             set { }
         }
+        //  Represents Toggle value in OpenKh.Unity.Tools.IdxImg.MainWindow
+        public override bool IsChecked { get; set; }
         public long PhysicalOffset => Entry.Offset * Img.IsoBlockAlign;
         public long PhysicalLength => (Entry.BlockLength + 1) * Img.IsoBlockAlign;
         public long UncompressedLength => Entry.Length;

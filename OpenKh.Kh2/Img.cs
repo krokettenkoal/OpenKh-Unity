@@ -61,8 +61,7 @@ namespace OpenKh.Kh2
 
         public bool TryFileOpen(string fileName, out Stream stream)
         {
-            bool result;
-            if (result = Entries.TryGetEntry(fileName, out var entry))
+            if (Entries.TryGetEntry(fileName, out var entry))
             {
                 stream = FileOpen(entry);
                 return true;
@@ -74,8 +73,8 @@ namespace OpenKh.Kh2
 
         public bool FileOpen(string fileName, Action<Stream> callback)
         {
-            bool result;
-            if (result = Entries.TryGetEntry(fileName, out var entry))
+            var result = Entries.TryGetEntry(fileName, out var entry);
+            if (result)
                 callback(FileOpen(entry));
 
             return result;
@@ -112,14 +111,14 @@ namespace OpenKh.Kh2
             byte key = 0;
             while (srcIndex > 0 && (key = srcData[srcIndex--]) == 0) ;
             if (srcIndex == 0)
-                return new byte[0];
+                return Array.Empty<byte>();
 
-            int decSize = srcData[srcIndex--] |
+            var decSize = srcData[srcIndex--] |
                 (srcData[srcIndex--] << 8) |
                 (srcData[srcIndex--] << 16) |
                 (srcData[srcIndex--] << 24);
 
-            int dstIndex = decSize - 1;
+            var dstIndex = decSize - 1;
             var dstData = new byte[decSize];
 
             while (dstIndex >= 0 && srcIndex >= 0)
@@ -131,7 +130,7 @@ namespace OpenKh.Kh2
                     if (copyIndex > 0 && srcIndex >= 0)
                     {
                         var copyLength = srcData[srcIndex--];
-                        for (int i = 0; i < copyLength + 3 && dstIndex >= 0; i++)
+                        for (var i = 0; i < copyLength + 3 && dstIndex >= 0; i++)
                         {
                             dstData[dstIndex--] = dstData[dstIndex + copyIndex + 1];
                         }
@@ -158,15 +157,16 @@ namespace OpenKh.Kh2
 
             var decompressedLength = srcData.Length;
             var key = GetLeastUsedByte(srcData);
-            var buffer = new List<byte>(decompressedLength);
+            var buffer = new List<byte>(decompressedLength)
+            {
+                key,
+                (byte) (decompressedLength >> 0),
+                (byte)(decompressedLength >> 8),
+                (byte)(decompressedLength >> 16),
+                (byte)(decompressedLength >> 24)
+            };
 
-            buffer.Add(key);
-            buffer.Add((byte)(decompressedLength >> 0));
-            buffer.Add((byte)(decompressedLength >> 8));
-            buffer.Add((byte)(decompressedLength >> 16));
-            buffer.Add((byte)(decompressedLength >> 24));
-
-            int sourceIndex = decompressedLength - 1;
+            var sourceIndex = decompressedLength - 1;
 
             while (sourceIndex >= 0)
             {

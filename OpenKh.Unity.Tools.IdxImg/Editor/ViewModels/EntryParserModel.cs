@@ -1,9 +1,9 @@
 using OpenKh.Kh2;
-using OpenKh.Tools.IdxImg.Interfaces;
+using OpenKh.Unity.Tools.IdxImg.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace OpenKh.Tools.IdxImg.ViewModels
+namespace OpenKh.Unity.Tools.IdxImg.ViewModels
 {
     internal class EntryParserModel
     {

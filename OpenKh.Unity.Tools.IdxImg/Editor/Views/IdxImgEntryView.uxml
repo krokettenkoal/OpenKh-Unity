@@ -1,0 +1,20 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/MainWindow.uss?fileID=7433441132597879392&amp;guid=58926d26d0835cb46866ec67732fb5ca&amp;type=3#MainWindow" />
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/Views/IdxImgEntryView.uss?fileID=7433441132597879392&amp;guid=7c7bd3651348a804da551bc84b815f12&amp;type=3#IdxImgEntryView" />
+    <ui:ScrollView name="IdxImgEntry">
+        <ui:Label tabindex="-1" text="OpenKh Asset Importer" display-tooltip-when-elided="true" name="Title" class="h1" />
+        <ui:VisualElement name="IdxImgProperties" class="ctrl-panel">
+            <ui:Label tabindex="-1" text="Properties" display-tooltip-when-elided="true" name="PropertiesTitle" class="h2" />
+            <ui:TextField picking-mode="Ignore" label="Full path" value="unknown" text="unknown" name="FullName" />
+            <ui:LongField label="Physical offset" value="0" name="PhysicalOffset" />
+            <ui:VisualElement class="ctrl-multi">
+                <ui:LongField label="Physical size" value="0" name="PhysicalSize" />
+                <ui:LongField label="Uncompressed size" value="0" name="UncompressedSize" />
+            </ui:VisualElement>
+            <ui:VisualElement class="ctrl-multi">
+                <ui:Toggle label="Compress" name="Compress" />
+                <ui:Toggle label="Stream" name="Stream" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:ScrollView>
+</ui:UXML>

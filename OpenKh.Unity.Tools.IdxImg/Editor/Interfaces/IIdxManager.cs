@@ -1,7 +1,7 @@
 using OpenKh.Kh2;
 using System.IO;
 
-namespace OpenKh.Tools.IdxImg.Interfaces
+namespace OpenKh.Unity.Tools.IdxImg.Interfaces
 {
     interface IIdxManager
     {

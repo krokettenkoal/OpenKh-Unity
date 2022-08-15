@@ -1,0 +1,42 @@
+.h1 {
+    font-size: 24px;
+    -unity-font-style: bold;
+    margin-bottom: 8px;
+}
+
+.h2 {
+    font-size: 18px;
+    -unity-font-style: bold;
+    margin-bottom: 5px;
+}
+
+.ctrl-panel {
+    padding: 10px;
+    border-color: rgb(137, 137, 137);
+    border-width: 1px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.ctrl-multi {
+    flex-direction: row;
+    justify-content: space-around;
+}
+
+.ctrl-multi > * {
+    flex-grow: 1;
+}
+
+.hidden {
+    display: none;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.transparent {
+    opacity: 0;
+}
