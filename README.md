@@ -2,7 +2,7 @@
 Unity integration of [OpenKh](https://github.com/OpenKH/OpenKh).
 
 ## Installation
-To install the package, simply clone the repository into your Unity project's `Asset` folder and run `git submodule update --init --recursive --depth 1` to clone all included submodules.
+To install the package, simply clone the repository into your Unity project's `Assets` folder and run `git submodule update --init --recursive --depth 1` to clone all included submodules.
 
 The package is planned to be available in the Unity asset store at some point in the future.
 
