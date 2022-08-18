@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using FileViewModel = OpenKh.Unity.Tools.IdxImg.ViewModels.FileViewModel;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
@@ -119,7 +121,10 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
-            var @checked = Root[0].Where(evm => evm.IsChecked).ToList();
+            var @checked = Root[0]
+                .Where(evm => evm is FileViewModel {IsChecked: true})
+                .Select(evm => evm as FileViewModel)
+                .ToList();
 
             if (@checked.Count == 0)
             {
@@ -132,36 +137,52 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
-            Debug.Log($"Importing {@checked.Count} assets..");
+            //Debug.Log($"Importing {@checked.Count} assets..");
 
-            for (var i = 0; i < @checked.Count; i++)
+            int i = 0, successful = 0;
+
+            for (; i < @checked.Count; i++)
             {
-                ImportAsset(@checked[i]);
-                EditorUtility.DisplayProgressBar("Importing assets..", @checked[i].Name, (float)i / @checked.Count);
+                var fvm = @checked[i];
+                var cancel = EditorUtility.DisplayCancelableProgressBar($"Importing assets ({i+1} / {@checked.Count})..", fvm.Entry.GetFullName(), (float)i / @checked.Count);
+
+                if (cancel)
+                    break;
+
+                if (ImportAsset(fvm))
+                    successful++;
             }
 
             EditorUtility.ClearProgressBar();
-
-            Debug.Log("Import complete.");
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            Debug.Log($"Import {(i >= @checked.Count ? "done" : "cancelled")}. Successful: {successful} / Skipped: {i - successful}");
         }
-        protected void ImportAsset(EntryViewModel evm)
+        protected bool ImportAsset(FileViewModel fvm)
         {
-            if (evm is not FileViewModel { IsChecked: true } fvm)
+            //Debug.Log($"Importing asset '{fvm.Name}'..");
+
+            if (!_img.TryFileOpen(fvm.Entry.GetFullName(), out var stream))
             {
-                //Debug.Log($"Skipped '{evm.Name}': item is not a file or not marked for import.");
-                return;
+                //Debug.LogWarning($"Could not import '{fvm.Entry.GetFullName()}'");
+                return false;
             }
 
-            Debug.Log($"Importing asset '{fvm.Name}'..");
+            var filePath = Path.Combine(PackageInfo.TempDir, $"{Path.GetFileNameWithoutExtension(_idxFilePath)}/{fvm.Entry.GetFullName()}");
+            var destDir = Path.GetDirectoryName(filePath);
 
-            if (_img.TryFileOpen(fvm.Entry.GetFullName(), out var stream))
-            {
-                Debug.Log("Open file successful. Stream can be saved.");
-            }
-            else
-            {
-                Debug.LogWarning("Open file failed. No stream received.");
-            }
+            if (destDir == null) 
+                return false;
+                
+            Directory.CreateDirectory(destDir);
+
+            if(File.Exists(filePath))
+                File.Delete(filePath);
+
+            using var fileStream = File.Create(filePath);
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.CopyTo(fileStream);
+
+            return true;
         }
     }
 }

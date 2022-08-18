@@ -133,12 +133,12 @@ namespace OpenKh.Unity.Tools.IdxImg
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Reading {Path.GetFileName(idxFilePath)}..", .1f);
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Opening {Path.GetFileName(idxFilePath)}..", .1f);
 
             var idx = Idx.Read(idxStream);
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Reading {Path.GetFileName(imgFilePath)}..", .2f);
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Opening {Path.GetFileName(imgFilePath)}..", .2f);
 
             //  Read IMG file
             _imgStream?.Dispose();
