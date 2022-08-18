@@ -134,10 +134,13 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             Debug.Log($"Importing {@checked.Count} assets..");
 
-            foreach (var node in @checked)
+            for (var i = 0; i < @checked.Count; i++)
             {
-                ImportAsset(node);
+                ImportAsset(@checked[i]);
+                EditorUtility.DisplayProgressBar("Importing assets..", @checked[i].Name, (float)i / @checked.Count);
             }
+
+            EditorUtility.ClearProgressBar();
 
             Debug.Log("Import complete.");
         }

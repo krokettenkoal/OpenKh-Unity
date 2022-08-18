@@ -124,16 +124,29 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             //Debug.Log($"Opening IDX ({idxFilePath}) and IMG ({imgFilePath})");
 
+            //  PROGRESS BAR
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Validating {Path.GetFileName(idxFilePath)}..", 0);
+
             //  Validate & read IDX file
             using var idxStream = File.OpenRead(idxFilePath);
             if (!Idx.IsValid(idxStream))
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
+
+            //  PROGRESS BAR
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Reading {Path.GetFileName(idxFilePath)}..", .1f);
+
             var idx = Idx.Read(idxStream);
+
+            //  PROGRESS BAR
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Reading {Path.GetFileName(imgFilePath)}..", .2f);
 
             //  Read IMG file
             _imgStream?.Dispose();
             _imgStream = File.OpenRead(imgFilePath);
             _img = new Img(_imgStream, idx, false);
+
+            //  PROGRESS BAR
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Reading file structure..", .8f);
 
             Root = new List<RootViewModel>
             {
@@ -143,8 +156,14 @@ namespace OpenKh.Unity.Tools.IdxImg
             _idxFilePath = idxFilePath;
             _imgFilePath = imgFilePath;
 
+            //  PROGRESS BAR
+            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Refreshing..", .9f);
+
             m_Tree.SetRootItems(Root.Select(rvm => rvm.GetTreeData()).ToList());
             m_Tree.Rebuild();
+
+            //  PROGRESS BAR
+            EditorUtility.ClearProgressBar();
         }
 
         //  IIdxManager implementation
