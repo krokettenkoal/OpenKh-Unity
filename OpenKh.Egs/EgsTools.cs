@@ -643,7 +643,7 @@ namespace OpenKh.Egs
 
         public SDasset(string name, byte[] originalAssetData, bool remasterpathtrue, bool scanmode)
         {
-            dynamic asset = null;
+            IAsset asset = null;
             ScanMode = scanmode;
 
             switch (Path.GetExtension(name), remasterpathtrue)
@@ -697,11 +697,18 @@ namespace OpenKh.Egs
         }
     }
 
-    class IMD
+    internal interface IAsset
     {
-        public List<int> Offsets = new List<int>();
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public List<int> Offsets { get; set; }
+        public int TextureCount { get; set; }
+        public bool Invalid { get; set; }
+    }
+
+    class IMD : IAsset
+    {
+        public List<int> Offsets { get; set; } = new List<int>();
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         public IMD(byte[] AssetData, int AssetOffset)
         {
@@ -725,11 +732,11 @@ namespace OpenKh.Egs
         }
     }
 
-    class IMZ
+    class IMZ : IAsset
     {
-        public List<int> Offsets = new List<int>();
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public List<int> Offsets { get; set; } = new List<int>();
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         public IMZ(byte[] AssetData, int AssetOffset)
         {
@@ -772,14 +779,14 @@ namespace OpenKh.Egs
         }
     }
 
-    class PAX
+    class PAX : IAsset
     {
-        public List<int> Offsets = new List<int>();
+        public List<int> Offsets { get; set; } = new List<int>();
         SortedDictionary<int, int> TempOffsets = new SortedDictionary<int, int>();
         SortedDictionary<int, Tuple<string, int>> TempScanPAX = new SortedDictionary<int, Tuple<string, int>>();
         public Dictionary<string, int> ScanPAX = new Dictionary<string, int>();
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         //PAX Textures are a bit weird to link to their remastered counterparts.
         //Currently all offsets seem to be gotten correctly, but the order of them doesn't
@@ -899,9 +906,9 @@ namespace OpenKh.Egs
         }
     }
 
-    class BAR
+    class BAR : IAsset
     {
-        public List<int> Offsets = new List<int>();
+        public List<int> Offsets { get; set; } = new List<int>();
         List<int> OffsetsTIM = new List<int>();
         List<int> OffsetsPAX = new List<int>();
         List<int> OffsetsTM2 = new List<int>();
@@ -912,12 +919,12 @@ namespace OpenKh.Egs
         public List<Tuple<string, int>> NamesAudio = new List<Tuple<string, int>>();
         Dictionary<string, int> ScanPAX = new Dictionary<string, int>();
 
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         public BAR(byte[] originalAssetData)
         {
-            dynamic subasset;
+            IAsset subasset;
 
             using MemoryStream ms = new MemoryStream(originalAssetData);
 
@@ -927,7 +934,7 @@ namespace OpenKh.Egs
             string magic;
             byte[] subfile;
 
-            magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(3));
+            magic = Encoding.ASCII.GetString(ms.ReadBytes(3));
             if (magic != "BAR") //BAR
             {
                 Invalid = true;
@@ -969,7 +976,7 @@ namespace OpenKh.Egs
                             Helpers.ScanPrint("RAW subtype found in BAR, but could not be scanned! Is this subtype correct?");
                         break;
                     case (10): //TIM2
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(4));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(4));
                         if (magic == "TIM2")
                         {
                             //Console.WriteLine("TIM2 Image!");
@@ -984,7 +991,7 @@ namespace OpenKh.Egs
                             Helpers.ScanPrint("TM2 subtype found in BAR, but could not be scanned! Is this subtype correct?");
                         break;
                     case (18): //PAX
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(3));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(3));
                         if (magic == "PAX") //PAX
                         {
                             //Console.WriteLine("PAX archive!");
@@ -994,13 +1001,13 @@ namespace OpenKh.Egs
 
                             TextureCount += subasset.TextureCount;
                             OffsetsPAX.AddRange(subasset.Offsets);
-                            ScanPAX = subasset.ScanPAX;
+                            ScanPAX = (subasset as PAX).ScanPAX;
                         }
                         else
                             Helpers.ScanPrint("PAX subtype found in BAR, but could not be scanned! Is this subtype correct?");
                         break;
                     case (24): //IMD
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(4));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(4));
                         if (magic == "IMGD") //IMGD
                         {
                             //Console.WriteLine("Image!");
@@ -1015,7 +1022,7 @@ namespace OpenKh.Egs
                             Helpers.ScanPrint("IMD subtype found in BAR, but could not be scanned! Is this subtype correct?");
                         break;
                     case (29): //IMZ                           
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(4));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(4));
                         if (magic == "IMGZ")//IMGZ
                         {
                             //Console.WriteLine("Image Collection!");
@@ -1031,7 +1038,7 @@ namespace OpenKh.Egs
                         break;
                     case (31): //Sound Effects
                     case (34): //Voice Audio
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(6));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(6));
                         if (magic == "ORIGIN")
                         {
                             //Console.WriteLine("Audio file!");
@@ -1060,7 +1067,7 @@ namespace OpenKh.Egs
                         }
                         break;
                     case (46): //BAR
-                        magic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(3));
+                        magic = Encoding.ASCII.GetString(ms.ReadBytes(3));
                         if (magic == "BAR")
                         {
                             ms.ReadBytes(1);
@@ -1081,7 +1088,7 @@ namespace OpenKh.Egs
                                 switch (subtype)
                                 {
                                     case (24): //IMD
-                                        subMagic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(4));
+                                        subMagic = Encoding.ASCII.GetString(ms.ReadBytes(4));
                                         if (subMagic == "IMGD") //IMGD
                                         {
                                             //Console.WriteLine("BAR-ception Image!");
@@ -1094,7 +1101,7 @@ namespace OpenKh.Egs
                                         }
                                         break;
                                     case (29): //IMZ                           
-                                        subMagic = System.Text.Encoding.ASCII.GetString(ms.ReadBytes(4));
+                                        subMagic = Encoding.ASCII.GetString(ms.ReadBytes(4));
                                         if (subMagic == "IMGZ")//IMGZ
                                         {
                                             //Console.WriteLine("BAR-ception Image Collection!");
@@ -1210,11 +1217,11 @@ namespace OpenKh.Egs
         }
     }
 
-    class RAW
+    class RAW : IAsset
     {
-        public List<int> Offsets = new List<int>();
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public List<int> Offsets { get; set; } = new List<int>();
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         public RAW(byte[] AssetData, int AssetOffset)
         {
@@ -1309,11 +1316,11 @@ namespace OpenKh.Egs
         }
     }
 
-    class TM2
+    class TM2 : IAsset
     {
-        public List<int> Offsets = new List<int>();
-        public int TextureCount = 0;
-        public bool Invalid = false;
+        public List<int> Offsets { get; set; } = new List<int>();
+        public int TextureCount { get; set; } = 0;
+        public bool Invalid { get; set; } = false;
 
         public TM2(byte[] AssetData, int AssetOffset)
         {
