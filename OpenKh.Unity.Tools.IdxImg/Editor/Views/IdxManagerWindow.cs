@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using OpenKh.Kh2;
 using OpenKh.Unity.Tools.IdxImg.Interfaces;
+using OpenKh.Unity.Tools.IdxImg.IO;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
+using AssetImporter = OpenKh.Unity.Tools.IdxImg.IO.AssetImporter;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
@@ -43,9 +45,6 @@ namespace OpenKh.Unity.Tools.IdxImg
 
         //  File streams
         protected Stream _imgStream;
-        protected Img _img;
-        protected string _idxFilePath;
-        protected string _imgFilePath;
 
         internal List<RootViewModel> Root { get; private set; }
 
@@ -143,7 +142,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             //  Read IMG file
             _imgStream?.Dispose();
             _imgStream = File.OpenRead(imgFilePath);
-            _img = new Img(_imgStream, idx, false);
+            AssetImporter.ActiveImg = new Img(_imgStream, idx, false);
 
             //  PROGRESS BAR
             EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Reading file structure..", .8f);
@@ -153,8 +152,8 @@ namespace OpenKh.Unity.Tools.IdxImg
                 new(Path.GetFileName(idxFilePath), idx, this)
             };
 
-            _idxFilePath = idxFilePath;
-            _imgFilePath = imgFilePath;
+            AssetImporter.ActiveIdxPath = idxFilePath;
+            AssetImporter.ActiveImgPath = imgFilePath;
 
             //  PROGRESS BAR
             EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Refreshing..", .9f);
@@ -168,9 +167,9 @@ namespace OpenKh.Unity.Tools.IdxImg
 
         //  IIdxManager implementation
         public Stream OpenFileFromIdx(string fileName) =>
-            _img.FileOpen(fileName);
+            AssetImporter.ActiveImg.FileOpen(fileName);
 
         public Stream OpenFileFromIdx(Idx.Entry idxEntry) =>
-            _img.FileOpen(idxEntry);
+            AssetImporter.ActiveImg.FileOpen(idxEntry);
     }
 }

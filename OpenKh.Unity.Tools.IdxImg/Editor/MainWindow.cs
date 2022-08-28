@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +8,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using FileViewModel = OpenKh.Unity.Tools.IdxImg.ViewModels.FileViewModel;
+using OpenKh.Unity.Tools.IdxImg.IO;
+using Unity.Collections;
+using Unity.Jobs;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
@@ -15,7 +19,12 @@ namespace OpenKh.Unity.Tools.IdxImg
         //  Toolbar
         private ToolbarButton m_OpenFile;
         private ToolbarButton m_ImportAssets;
-        
+
+        private NativeArray<int> m_ExtractQueue;
+        private NativeArray<bool> m_ExtractResults;
+        private NativeArray<int> m_ExportQueue;
+        private NativeArray<bool> m_ExportResults;
+
         [MenuItem("OpenKh/Asset Importer")]
         public static void ShowAssetImporter()
         {
@@ -122,7 +131,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             }
 
             var @checked = Root[0]
-                .Where(evm => evm is FileViewModel {IsChecked: true})
+                .Where(evm => evm is FileViewModel { IsChecked: true })
                 .Select(evm => evm as FileViewModel)
                 .ToList();
 
@@ -137,53 +146,83 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
-            //Debug.Log($"Importing {@checked.Count} assets..");
-
-            int i = 0, successful = 0;
-
-            for (; i < @checked.Count; i++)
+            try
             {
-                var fvm = @checked[i];
-                var cancel = EditorUtility.DisplayCancelableProgressBar($"Importing assets ({i+1} / {@checked.Count})..", fvm.Entry.GetFullName(), (float)i / @checked.Count);
+                var extractHandle = ExtractAssets(@checked);
+                var exportHandle = ExportAssets(extractHandle);
 
-                if (cancel)
-                    break;
+                exportHandle.Complete();
 
-                if (ImportAsset(fvm))
-                    successful++;
+                m_ExtractQueue.Dispose();
+                m_ExtractResults.Dispose();
+                m_ExportQueue.Dispose();
+                m_ExportResults.Dispose();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("Asset import failed!");
+                Debug.LogError(ex);
+            }
+            finally
+            {
+                ExtractQueue.Active.Clear();
+                ExportQueue.Active.Clear();
             }
 
             EditorUtility.ClearProgressBar();
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-            Debug.Log($"Import {(i >= @checked.Count ? "done" : "cancelled")}. Successful: {successful} / Skipped: {i - successful}");
-        }
-        protected bool ImportAsset(FileViewModel fvm)
-        {
-            //Debug.Log($"Importing asset '{fvm.Name}'..");
 
-            if (!_img.TryFileOpen(fvm.Entry.GetFullName(), out var stream))
+            Debug.Log("Import done.");
+        }
+
+        protected JobHandle ExtractAssets(List<FileViewModel> assets)
+        {
+            //Debug.Log($"Importing {@checked.Count} assets..");
+
+            ExtractQueue.Active.AddRange(assets);
+
+            m_ExtractQueue = new NativeArray<int>(ExtractQueue.Active.Select((e, i) => i).ToArray(), Allocator.Persistent);
+            m_ExtractResults = new NativeArray<bool>(ExtractQueue.Active.Count, Allocator.Persistent);
+            var job = new ExtractJobParallel()
             {
-                //Debug.LogWarning($"Could not import '{fvm.Entry.GetFullName()}'");
-                return false;
+                QueueIds = m_ExtractQueue,
+                Result = m_ExtractResults,
+            };
+
+            return job.Schedule(m_ExtractQueue.Length, 1);
+        }
+
+        /// <summary>
+        /// Convert asset files into file formats supported in Unity
+        /// </summary>
+        protected JobHandle ExportAssets(JobHandle extractJobHandle)
+        {
+            Debug.Log("Exporting asset files..");
+
+            if(ExportQueue.Active.Count > 0)
+                ExportQueue.Active.Clear();
+
+            if (Directory.Exists(PackageInfo.TempDir))
+            {
+                ExportQueue.Active.AddRange(
+                    Directory.GetFiles(PackageInfo.TempDir, "*.mdlx", SearchOption.AllDirectories)
+                        .Where(IsConvertible)
+                    );
             }
 
-            var filePath = Path.Combine(PackageInfo.TempDir, $"{Path.GetFileNameWithoutExtension(_idxFilePath)}/{fvm.Entry.GetFullName()}");
-            var destDir = Path.GetDirectoryName(filePath);
+            m_ExportQueue = new NativeArray<int>(ExportQueue.Active.Select((e, i) => i).ToArray(), Allocator.Persistent);
+            m_ExportResults = new NativeArray<bool>(ExportQueue.Active.Count, Allocator.Persistent);
+            var job = new ExportJobParallel()
+            {
+                QueueIds = m_ExportQueue,
+                Format = ExportFormat.Aset,
+                Result = m_ExportResults,
+            };
 
-            if (destDir == null) 
-                return false;
-                
-            Directory.CreateDirectory(destDir);
-
-            if(File.Exists(filePath))
-                File.Delete(filePath);
-
-            using var fileStream = File.Create(filePath);
-            stream.Seek(0, SeekOrigin.Begin);
-            stream.CopyTo(fileStream);
-
-            return true;
+            return job.Schedule(m_ExportQueue.Length, 1, extractJobHandle);
         }
+
+        protected virtual bool IsConvertible(string filePath) => Path.GetExtension(filePath).ToLowerInvariant() == ".mdlx";
     }
 }
 
