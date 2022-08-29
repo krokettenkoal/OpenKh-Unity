@@ -1,4 +1,4 @@
-namespace OpenKh.Unity.Tools.AsetExport
+namespace OpenKh.Unity.AsetExport
 {
     public enum ExportState {
         Initialization,

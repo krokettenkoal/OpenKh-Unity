@@ -1,6 +1,8 @@
-namespace OpenKh.Unity.Tools.AsetExport
+namespace OpenKh.Unity.AsetExport
 {
-    public struct ExportStatus {
+    public struct ExportStatus
+    {
+        public string fileName;
         public string animName;
 
         public int animCount;

@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using OpenKh.Unity.Tools.AsetExport;
+using OpenKh.Unity.AsetExport;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -148,9 +146,6 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
-            //var tokenSource = new CancellationTokenSource();
-            //var cancellationToken = tokenSource.Token;
-            //var extractTasks = @checked.Select((fvm, i) => AssetImporter.RunExtractTask(fvm, cancellationToken)).ToArray();
             var extractStatus = new ExtractStatus
             {
                 current = -1,
@@ -159,9 +154,10 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             try
             {
+                //  Extract checked assets
                 foreach (var fvm in @checked)
                 {
-                    Debug.Log($"Extracting {fvm.Name} ..");
+                    //Debug.Log($"Extracting {fvm.Name} ..");
 
                     extractStatus.fileName = fvm.FullName;
                     extractStatus.current++;
@@ -175,30 +171,12 @@ namespace OpenKh.Unity.Tools.IdxImg
                 if (Utils.DisplayCancellableExtractProgress(ExtractState.Finished, extractStatus))
                     throw new OperationCanceledException();
 
+                //  Export all supported extracted assets
                 foreach (var asset in AssetImporter.ExportableAssets)
                 {
-                    Debug.Log($"Exporting {asset} ..");
+                    //Debug.Log($"Exporting {asset} ..");
                     MdlxConvert.ToAset(asset, Utils.DisplayExportProgress, out _);
                 }
-
-                //  Run extract task for all entries
-                //  Wait for first task
-                //  Run export task for each exportable entry
-
-                //Task.WaitAll(extractTasks);
-                /*
-                var exportTasks = AssetImporter.ExportableAssets.Select(xa =>
-                    AssetImporter.RunExportTask(xa, cancellationToken, Utils.DisplayExportProgress))
-                    .ToArray();
-                */
-                //Task.WaitAll(exportTasks);
-
-                /*
-                m_ExtractQueue.Dispose();
-                m_ExtractResults.Dispose();
-                m_ExportQueue.Dispose();
-                m_ExportResults.Dispose();
-            */
             }
             catch (Exception ex)
             {
@@ -225,52 +203,6 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             Debug.Log("Import done.");
         }
-
-        /*
-        protected JobHandle ExtractAssets(List<FileViewModel> assets)
-        {
-            //Debug.Log($"Importing {@checked.Count} assets..");
-
-            ExtractQueue.Active.AddRange(assets);
-
-            m_ExtractQueue = new NativeArray<int>(ExtractQueue.Active.Select((e, i) => i).ToArray(), Allocator.Persistent);
-            m_ExtractResults = new NativeArray<bool>(ExtractQueue.Active.Count, Allocator.Persistent);
-            var job = new ExtractJobParallel()
-            {
-                QueueIds = m_ExtractQueue,
-                Result = m_ExtractResults,
-            };
-
-            return job.Schedule(m_ExtractQueue.Length, 1);
-        }
-        /// <summary>
-        /// Convert asset files into file formats supported in Unity
-        /// </summary>
-        protected JobHandle ExportAssets(JobHandle extractJobHandle)
-        {
-            Debug.Log("Exporting asset files..");
-
-            if(ExportQueue.Active.Count > 0)
-                ExportQueue.Active.Clear();
-
-            if (Directory.Exists(PackageInfo.TempDir))
-            {
-                ExportQueue.Active.AddRange(
-                    Directory.GetFiles(PackageInfo.TempDir, "*.mdlx", SearchOption.AllDirectories));
-            }
-
-            m_ExportQueue = new NativeArray<int>(ExportQueue.Active.Select((e, i) => i).ToArray(), Allocator.Persistent);
-            m_ExportResults = new NativeArray<bool>(ExportQueue.Active.Count, Allocator.Persistent);
-            var job = new ExportJobParallel()
-            {
-                QueueIds = m_ExportQueue,
-                Format = ExportFormat.Aset,
-                Result = m_ExportResults,
-            };
-
-            return job.Schedule(m_ExportQueue.Length, 1, extractJobHandle);
-        }
-        */
     }
 }
 

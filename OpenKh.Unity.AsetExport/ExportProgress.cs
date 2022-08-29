@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenKh.Unity.Tools.AsetExport {
+namespace OpenKh.Unity.AsetExport {
     public class ExportProgress {
         private bool _cancel;
         public bool CancellationPending {

@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using OpenKh.Unity.Tools.AsetExport;
+using OpenKh.Unity.AsetExport;
 
 namespace OpenKh.Unity.Tools.IdxImg.IO
 {
@@ -63,22 +63,10 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
 
             return true;
         }
+        /// <summary>
+        /// Extract an asset file contained in an IDX/IMG file pair
+        /// </summary>
+        /// <param name="fvm">View model of the asset file to extract</param>
         public static void ExtractAsset(FileViewModel fvm) => ExtractAsset(fvm, out _);
-        public static Task RunExtractTask(FileViewModel fvm, CancellationToken ct)
-        {
-            return Task.Factory.StartNew(() =>
-            {
-                ct.ThrowIfCancellationRequested();
-                ExtractAsset(fvm);
-            }, ct);
-        }
-
-        public static Task RunExportTask(string mdlxPath, CancellationToken ct,
-            Action<ExportState, ExportStatus> onProgress) =>
-            Task.Factory.StartNew(() =>
-            {
-                ct.ThrowIfCancellationRequested();
-                MdlxConvert.ToAset(mdlxPath, onProgress, out _);
-            }, ct);
     }
 }

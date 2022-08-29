@@ -10,9 +10,9 @@ using OpenKh.Unity.MdlxMset.Binary;
 using OpenKh.Unity.MdlxMset.Texture;
 using OpenKh.Unity.MdlxMset.Utils;
 using Mesh = OpenKh.Unity.MdlxMset.Model.Mesh;
-using OpenKh.Unity.Tools.AsetExport.Interfaces;
+using OpenKh.Unity.AsetExport.Interfaces;
 
-namespace OpenKh.Unity.Tools.AsetExport
+namespace OpenKh.Unity.AsetExport
 {
     public class MdlxConvert : IControllerBindable, IDisposable {
 
@@ -500,9 +500,13 @@ namespace OpenKh.Unity.Tools.AsetExport
         /// Export an ASET file of the currently loaded MDLX/MSET combo
         /// </summary>
         /// <param name="progress">Event handler for progress updates</param>
-        /// <returns>True if the export has been succesfull</returns>
+        /// <returns>True if the export has been successful</returns>
         private bool ExportASET(ExportProgress progress, out string outFilePath) {
-            var status = new ExportStatus();
+            var status = new ExportStatus
+            {
+                fileName = Path.GetFileNameWithoutExtension(MdlxPath),
+            };
+
             outFilePath = string.Empty;
 
             progress.Update(ExportState.Initialization, status);
