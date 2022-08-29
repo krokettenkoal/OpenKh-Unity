@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using OpenKh.Unity.Tools.IdxImg.ViewModels;
+using System.Threading;
+using System.Threading.Tasks;
+using OpenKh.Unity.Tools.AsetExport;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using FileViewModel = OpenKh.Unity.Tools.IdxImg.ViewModels.FileViewModel;
+using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using OpenKh.Unity.Tools.IdxImg.IO;
-using Unity.Collections;
-using Unity.Jobs;
+using AssetImporter = OpenKh.Unity.Tools.IdxImg.IO.AssetImporter;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
@@ -20,10 +20,12 @@ namespace OpenKh.Unity.Tools.IdxImg
         private ToolbarButton m_OpenFile;
         private ToolbarButton m_ImportAssets;
 
+        /*
         private NativeArray<int> m_ExtractQueue;
         private NativeArray<bool> m_ExtractResults;
         private NativeArray<int> m_ExportQueue;
         private NativeArray<bool> m_ExportResults;
+        */
 
         [MenuItem("OpenKh/Asset Importer")]
         public static void ShowAssetImporter()
@@ -146,27 +148,76 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
+            //var tokenSource = new CancellationTokenSource();
+            //var cancellationToken = tokenSource.Token;
+            //var extractTasks = @checked.Select((fvm, i) => AssetImporter.RunExtractTask(fvm, cancellationToken)).ToArray();
+            var extractStatus = new ExtractStatus
+            {
+                current = -1,
+                total = @checked.Count,
+            };
+
             try
             {
-                var extractHandle = ExtractAssets(@checked);
-                var exportHandle = ExportAssets(extractHandle);
+                foreach (var fvm in @checked)
+                {
+                    Debug.Log($"Extracting {fvm.Name} ..");
 
-                exportHandle.Complete();
+                    extractStatus.fileName = fvm.FullName;
+                    extractStatus.current++;
 
+                    if (Utils.DisplayCancellableExtractProgress(ExtractState.Processing, extractStatus))
+                        throw new OperationCanceledException();
+
+                    AssetImporter.ExtractAsset(fvm);
+                }
+
+                if (Utils.DisplayCancellableExtractProgress(ExtractState.Finished, extractStatus))
+                    throw new OperationCanceledException();
+
+                foreach (var asset in AssetImporter.ExportableAssets)
+                {
+                    Debug.Log($"Exporting {asset} ..");
+                    MdlxConvert.ToAset(asset, Utils.DisplayExportProgress, out _);
+                }
+
+                //  Run extract task for all entries
+                //  Wait for first task
+                //  Run export task for each exportable entry
+
+                //Task.WaitAll(extractTasks);
+                /*
+                var exportTasks = AssetImporter.ExportableAssets.Select(xa =>
+                    AssetImporter.RunExportTask(xa, cancellationToken, Utils.DisplayExportProgress))
+                    .ToArray();
+                */
+                //Task.WaitAll(exportTasks);
+
+                /*
                 m_ExtractQueue.Dispose();
                 m_ExtractResults.Dispose();
                 m_ExportQueue.Dispose();
                 m_ExportResults.Dispose();
+            */
             }
             catch (Exception ex)
             {
-                Debug.LogWarning("Asset import failed!");
-                Debug.LogError(ex);
+                if (ex is OperationCanceledException)
+                {
+                    Debug.Log("Asset import cancelled by user.");
+                }
+                else
+                {
+                    Debug.LogWarning("Asset import failed!");
+                    Debug.LogError(ex);
+                }
             }
             finally
             {
+                //tokenSource.Dispose();
                 ExtractQueue.Active.Clear();
                 ExportQueue.Active.Clear();
+                EditorUtility.ClearProgressBar();
             }
 
             EditorUtility.ClearProgressBar();
@@ -175,6 +226,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             Debug.Log("Import done.");
         }
 
+        /*
         protected JobHandle ExtractAssets(List<FileViewModel> assets)
         {
             //Debug.Log($"Importing {@checked.Count} assets..");
@@ -191,7 +243,6 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             return job.Schedule(m_ExtractQueue.Length, 1);
         }
-
         /// <summary>
         /// Convert asset files into file formats supported in Unity
         /// </summary>
@@ -205,9 +256,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             if (Directory.Exists(PackageInfo.TempDir))
             {
                 ExportQueue.Active.AddRange(
-                    Directory.GetFiles(PackageInfo.TempDir, "*.mdlx", SearchOption.AllDirectories)
-                        .Where(IsConvertible)
-                    );
+                    Directory.GetFiles(PackageInfo.TempDir, "*.mdlx", SearchOption.AllDirectories));
             }
 
             m_ExportQueue = new NativeArray<int>(ExportQueue.Active.Select((e, i) => i).ToArray(), Allocator.Persistent);
@@ -221,8 +270,7 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             return job.Schedule(m_ExportQueue.Length, 1, extractJobHandle);
         }
-
-        protected virtual bool IsConvertible(string filePath) => Path.GetExtension(filePath).ToLowerInvariant() == ".mdlx";
+        */
     }
 }
 

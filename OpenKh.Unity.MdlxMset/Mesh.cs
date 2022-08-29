@@ -48,13 +48,13 @@ namespace OpenKh.Unity.MdlxMset.Model {
             timc = null;
             timf = null;
             foreach (var t in textures)
-                UnityEngine.Object.Destroy(t);
+                UnityEngine.Object.DestroyImmediate(t);
             textures.Clear();
             foreach (var t in textures_1)
-                UnityEngine.Object.Destroy(t);
+                UnityEngine.Object.DestroyImmediate(t);
             textures_1.Clear();
             foreach (var t in textures_2)
-                UnityEngine.Object.Destroy(t);
+                UnityEngine.Object.DestroyImmediate(t);
             textures_2.Clear();
             bodies.Clear();
             binMdlx = null;

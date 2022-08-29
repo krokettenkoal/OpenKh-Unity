@@ -507,15 +507,20 @@ namespace OpenKh.Unity.Tools.AsetExport
 
             progress.Update(ExportState.Initialization, status);
 
-            if (progress.CancellationPending) {
+            if (progress.CancellationPending)
+            {
+                Debug.Log("ASET export cancelled by user.");
                 return false;
             }
 
             // get main mesh
             var m = Model[0];
 
-            if (m == null || m.mdlx == null || m.mset == null || Motions.Count <= 0)
+            if (m?.mdlx == null || m.mset == null || Motions.Count <= 0)
+            {
+                Debug.LogWarning("ASET export failed: Mesh could not be loaded.");
                 return false;
+            }
 
             var t = m.mdlx.t31s[0];
 
@@ -538,7 +543,7 @@ namespace OpenKh.Unity.Tools.AsetExport
             var offsets_start = mat_writer.BaseStream.Position;
 
             // move past animation offset array
-            mat_writer.BaseStream.Position += ((anim_count * 4) + (0x0F)) & (~0x0F);
+            mat_writer.BaseStream.Position += (anim_count * 4 + 0x0F) & ~0x0F;
 
             progress.Update(ExportState.Initialization, status);
 

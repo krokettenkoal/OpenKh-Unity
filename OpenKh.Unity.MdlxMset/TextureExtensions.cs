@@ -11,8 +11,10 @@ namespace OpenKh.Unity.MdlxMset.Texture {
             stream.Position = 0;
             var tex = new Texture2D(p.Width, p.Height);
 
-            tex.LoadRawTextureData(stream.ToArray());
-            tex.Apply();
+            //tex.LoadRawTextureData(stream.ToArray());
+            //tex.Apply();
+
+            tex.LoadImage(stream.ToArray());
 
             return tex;
         }

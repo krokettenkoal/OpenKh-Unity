@@ -5,22 +5,36 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
 {
     public static class Utils
     {
-        public static bool DisplayExtractProgress(string fileName, int current, int total)
+        public static void DisplayExtractProgress(ExtractState state, ExtractStatus status)
+        {
+            EditorUtility.DisplayProgressBar(
+                $"[{state}]: Asset import ({status.current + 1} / {status.total})..",
+                status.fileName,
+                (float)status.current / status.total
+            );
+        }
+        public static bool DisplayCancellableExtractProgress(ExtractState state, ExtractStatus status)
         {
             return EditorUtility.DisplayCancelableProgressBar(
-                $"Importing assets ({current + 1} / {total})..", 
-                fileName, 
-                (float)current / total
+                $"[{state}]: Asset import ({status.current + 1} / {status.total})..", 
+                status.fileName, 
+                (float)status.current / status.total
                 );
         }
         public static void DisplayExportProgress(ExportState state, ExportStatus status)
         {
-            EditorUtility.DisplayCancelableProgressBar(
+            EditorUtility.DisplayProgressBar(
                 $"{state}: ASET export ({status.animIndex}/{status.animCount})",
                 status.animName,
                 (float)status.animIndex / status.animCount
             );
         }
+        public static bool DisplayCancellableExportProgress(ExportState state, ExportStatus status) =>
+            EditorUtility.DisplayCancelableProgressBar(
+                $"{state}: ASET export ({status.animIndex}/{status.animCount})",
+                status.animName,
+                (float)status.animIndex / status.animCount
+            );
     }
 
 }
