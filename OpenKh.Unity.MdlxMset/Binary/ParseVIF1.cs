@@ -46,23 +46,23 @@ namespace OpenKh.Unity.MdlxMset.Binary
             Parse(si, 0);
         }
         public void Parse(MemoryStream si, int tops) {
-            MemoryStream os = new MemoryStream(vu1.vumem, true);
-            BinaryWriter bw = new BinaryWriter(os);
+            var os = new MemoryStream(vu1.vumem, true);
+            var bw = new BinaryWriter(os);
 
-            byte[] vifmask = new byte[16] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            uint[] colval = new uint[4];
-            uint[] rowval = new uint[4];
+            var vifmask = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            var colval = new uint[4];
+            var rowval = new uint[4];
 
-            BinaryReader br = new BinaryReader(si);
+            var br = new BinaryReader(si);
             while (si.Position < si.Length) {
-                long curPos = si.Position;
-                uint v = br.ReadUInt32();
-                int cmd = ((int)(v >> 24) & 0x7F);
+                var curPos = si.Position;
+                var v = br.ReadUInt32();
+                var cmd = ((int)(v >> 24) & 0x7F);
                 switch (cmd) {
                     case 0x00: break; // nop
                     case 0x01: { // stcycl
-                            int cl = ((int)(v >> 0) & 0xFF);
-                            int wl = ((int)(v >> 8) & 0xFF);
+                            var cl = ((int)(v >> 0) & 0xFF);
+                            var wl = ((int)(v >> 8) & 0xFF);
                             break;
                         }
                     case 0x02: break; // offset
@@ -78,8 +78,8 @@ namespace OpenKh.Unity.MdlxMset.Binary
                     case 0x17: SplitMsmem(); break; // mscnt
                     case 0x15: break; // mscalf
                     case 0x20: { // stmask
-                            uint r1 = br.ReadUInt32();
-                            for (int x = 0; x < 16; x++) {
+                            var r1 = br.ReadUInt32();
+                            for (var x = 0; x < 16; x++) {
                                 vifmask[x] = (byte)(((int)(r1 >> (2 * x))) & 3);
                             }
                             break;
@@ -100,27 +100,27 @@ namespace OpenKh.Unity.MdlxMset.Binary
                         }
                     case 0x4A: break; // mpg
                     case 0x50: { // direct
-                            int imm = ((int)(v >> 0) & 0xFFFF);
+                            var imm = ((int)(v >> 0) & 0xFFFF);
                             si.Position = (si.Position + 15) & (~15);
                             si.Position += 16 * imm;
                             break;
                         }
                     case 0x51: { // directhl
-                            int imm = ((int)(v >> 0) & 0xFFFF);
+                            var imm = ((int)(v >> 0) & 0xFFFF);
                             si.Position = (si.Position + 15) & (~15);
                             si.Position += 16 * imm;
                             break;
                         }
                     default: { // unpack or ?
                             if (0x60 == (cmd & 0x60)) {
-                                int m = ((int)(cmd >> 4) & 1);
-                                int vn = ((int)(cmd >> 2) & 0x3);
-                                int vl = ((int)(cmd >> 0) & 0x3);
+                                var m = ((int)(cmd >> 4) & 1);
+                                var vn = ((int)(cmd >> 2) & 0x3);
+                                var vl = ((int)(cmd >> 0) & 0x3);
 
-                                int size = ((int)(v >> 16) & 0xFF);
-                                int flg = ((int)(v >> 15) & 1);
-                                int usn = ((int)(v >> 14) & 1);
-                                int addr = ((int)(v >> 0) & 0x3FF);
+                                var size = ((int)(v >> 16) & 0xFF);
+                                var flg = ((int)(v >> 15) & 1);
+                                var usn = ((int)(v >> 14) & 1);
+                                var addr = ((int)(v >> 0) & 0x3FF);
 
                                 int cbEle = 0, cntEle = 1;
                                 switch (vl) {
@@ -136,14 +136,14 @@ namespace OpenKh.Unity.MdlxMset.Binary
                                     case 3: cntEle = 4; break;
                                     default: Debug.Fail("Ahh vn!"); break;
                                 }
-                                int cbTotal = (cbEle * cntEle * size + 3) & (~3);
-                                long newPos = si.Position + cbTotal;
+                                var cbTotal = (cbEle * cntEle * size + 3) & (~3);
+                                var newPos = si.Position + cbTotal;
 
                                 os.Position = 16 * (tops + addr);
-                                bool nomask = (m == 0) ? true : false;
+                                var nomask = (m == 0) ? true : false;
 
-                                Reader reader = new Reader(br, vl, usn);
-                                for (int y = 0; y < size; y++) {
+                                var reader = new Reader(br, vl, usn);
+                                for (var y = 0; y < size; y++) {
                                     uint tmpv;
                                     switch (vn) {
                                         case 0: // S-XX

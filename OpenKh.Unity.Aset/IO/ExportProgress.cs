@@ -1,6 +1,6 @@
 using System;
 
-namespace OpenKh.Unity.AsetExport {
+namespace OpenKh.Unity.Aset.IO {
     public class ExportProgress {
         private bool _cancel;
         public bool CancellationPending {
@@ -14,7 +14,7 @@ namespace OpenKh.Unity.AsetExport {
         }
 
         public event Action<ExportState, ExportStatus> OnProgress;
-        public void Update(ExportState state, ExportStatus status)=> OnProgress?.Invoke(state, status);
+        public void Update(ExportState state, ExportStatus status) => OnProgress?.Invoke(state, status);
         public void Cancel() {
             CancellationPending = true;
         }

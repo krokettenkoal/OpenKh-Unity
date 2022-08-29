@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using OpenKh.Unity.MdlxMset.Model;
 using OpenKh.Unity.MdlxMset.Motion;
-using OpenKh.Unity.MdlxMset.Texture;
 
-namespace OpenKh.Unity.MdlxMset.Model {
+namespace OpenKh.Unity.MdlxMset.Texture {
     internal class SelTexfacUt {
         public static PatTexSel[] Sel(List<FacePatch> alp, float tick, FaceModifier fm) {
             var sel = new PatTexSel[alp.Count];

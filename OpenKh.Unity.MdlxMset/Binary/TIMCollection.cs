@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using OpenKh.Unity.MdlxMset.Texture;
 
-namespace OpenKh.Unity.MdlxMset.Model {
+namespace OpenKh.Unity.MdlxMset.Binary {
     public class TIMCollection {
         public static Texex2[] Load(Stream fs) {
             var pos = Convert.ToInt32(fs.Position);

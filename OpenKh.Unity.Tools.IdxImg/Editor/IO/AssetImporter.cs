@@ -1,12 +1,8 @@
-using System;
 using System.Collections.Generic;
 using OpenKh.Kh2;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using System.IO;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using OpenKh.Unity.AsetExport;
 
 namespace OpenKh.Unity.Tools.IdxImg.IO
 {

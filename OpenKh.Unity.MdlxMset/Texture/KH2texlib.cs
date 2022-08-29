@@ -1,4 +1,4 @@
-namespace OpenKh.Unity.MdlxMset.Encoding
+namespace OpenKh.Unity.MdlxMset.Texture
 {
     public class Reform32 {
         static readonly byte[] tbl32pao = new byte[16] {
@@ -19,21 +19,21 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">Height in unit of 32px</param>
         /// <returns>PSMCT32 binary</returns>
         public static byte[] Encode32(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 32 * bh; wy += 32) {
-                for (int wx = 0; wx < 64 * bw; wx += 64) {
-                    int wwby = 8192 * ((wx / 64) + bw * (wy / 32));
-                    for (int by = 0; by < 32; by += 8) {
-                        for (int bx = 0; bx < 64; bx += 8) {
-                            int bbby = 256 * tbl32bc[((bx / 8) + (by / 8) * 8)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int ccby = 64 * cc;
-                                for (int pc = 0; pc < 16; pc++) {
-                                    int outx = wx + bx + 0 + (pc % 8);
-                                    int outy = wy + by + 2 * cc + (pc / 8);
-                                    int offw = 4 * (outx + 64 * bw * outy);
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 32 * bh; wy += 32) {
+                for (var wx = 0; wx < 64 * bw; wx += 64) {
+                    var wwby = 8192 * ((wx / 64) + bw * (wy / 32));
+                    for (var by = 0; by < 32; by += 8) {
+                        for (var bx = 0; bx < 64; bx += 8) {
+                            var bbby = 256 * tbl32bc[((bx / 8) + (by / 8) * 8)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var ccby = 64 * cc;
+                                for (var pc = 0; pc < 16; pc++) {
+                                    var outx = wx + bx + 0 + (pc % 8);
+                                    var outy = wy + by + 2 * cc + (pc / 8);
+                                    var offw = 4 * (outx + 64 * bw * outy);
 
-                                    int offr = 4 * tbl32pao[pc] + ccby + bbby + wwby;
+                                    var offr = 4 * tbl32pao[pc] + ccby + bbby + wwby;
 
                                     pic[offr + 0] = bin[offw + 0];
                                     pic[offr + 1] = bin[offw + 1];
@@ -58,21 +58,21 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">Height in unit of 32px</param>
         /// <returns>PSMCT32 binary</returns>
         public static byte[] Decode32(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 32 * bh; wy += 32) {
-                for (int wx = 0; wx < 64 * bw; wx += 64) {
-                    int wwby = 8192 * ((wx / 64) + bw * (wy / 32));
-                    for (int by = 0; by < 32; by += 8) {
-                        for (int bx = 0; bx < 64; bx += 8) {
-                            int bbby = 256 * tbl32bc[((bx / 8) + (by / 8) * 8)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int ccby = 64 * cc;
-                                for (int pc = 0; pc < 16; pc++) {
-                                    int outx = wx + bx + 0 + (pc % 8);
-                                    int outy = wy + by + 2 * cc + (pc / 8);
-                                    int offw = 4 * (outx + 64 * bw * outy);
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 32 * bh; wy += 32) {
+                for (var wx = 0; wx < 64 * bw; wx += 64) {
+                    var wwby = 8192 * ((wx / 64) + bw * (wy / 32));
+                    for (var by = 0; by < 32; by += 8) {
+                        for (var bx = 0; bx < 64; bx += 8) {
+                            var bbby = 256 * tbl32bc[((bx / 8) + (by / 8) * 8)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var ccby = 64 * cc;
+                                for (var pc = 0; pc < 16; pc++) {
+                                    var outx = wx + bx + 0 + (pc % 8);
+                                    var outy = wy + by + 2 * cc + (pc / 8);
+                                    var offw = 4 * (outx + 64 * bw * outy);
 
-                                    int offr = 4 * tbl32pao[pc] + ccby + bbby + wwby;
+                                    var offr = 4 * tbl32pao[pc] + ccby + bbby + wwby;
 
                                     pic[offw + 0] = bin[offr + 0];
                                     pic[offw + 1] = bin[offr + 1];
@@ -99,20 +99,20 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="baseoff">gsram write offset</param>
         /// <param name="bw64">64 pixels unit (dest screen width)</param>
         public static void Encode32b(byte[] src, byte[] gsram, int rrw, int rrh, int ddax, int dday, int baseoff, int bw64) {
-            for (int vy = 0; vy < rrh; vy++) {
-                int gy = dday + vy;
-                for (int vx = 0; vx < rrw; vx++) {
-                    int gx = ddax + vx;
+            for (var vy = 0; vy < rrh; vy++) {
+                var gy = dday + vy;
+                for (var vx = 0; vx < rrw; vx++) {
+                    var gx = ddax + vx;
 
-                    int wwby = 8192 * ((gx / 64) + bw64 * (gy / 32));
-                    int bbby = 256 * tbl32bc[(((gx & 63) / 8) + ((gy & 31) / 8) * 8)];
-                    int cc = (gy & 7) / 2;
-                    int ccby = 64 * cc;
-                    int pc = (gx & 7) + 8 * (gy & 1);
+                    var wwby = 8192 * ((gx / 64) + bw64 * (gy / 32));
+                    var bbby = 256 * tbl32bc[(((gx & 63) / 8) + ((gy & 31) / 8) * 8)];
+                    var cc = (gy & 7) / 2;
+                    var ccby = 64 * cc;
+                    var pc = (gx & 7) + 8 * (gy & 1);
 
-                    int offr = 4 * (vx + rrw * vy);
+                    var offr = 4 * (vx + rrw * vy);
 
-                    int offw = baseoff + 4 * tbl32pao[pc] + ccby + bbby + wwby;
+                    var offw = baseoff + 4 * tbl32pao[pc] + ccby + bbby + wwby;
 
                     gsram[offw + 0] = src[offr + 0];
                     gsram[offw + 1] = src[offr + 1];
@@ -123,18 +123,18 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         }
 
         public static byte[] Decode32c(byte[] gsram, int cx, int cy, int readoff, int bw64) {
-            byte[] pic = new byte[4 * cx * cy];
-            for (int y = 0; y < cy; y++) {
-                for (int x = 0; x < cx; x++) {
-                    int wwby = 8192 * (((x) / 64) + bw64 * ((y) / 32));
-                    int bbby = 256 * tbl32bc[(((x & 63) / 8) + ((y & 31) / 8) * 8)];
-                    int cc = (y & 7) / 2;
-                    int ccby = 64 * cc;
-                    int pc = (x & 7) + 8 * (y & 1);
+            var pic = new byte[4 * cx * cy];
+            for (var y = 0; y < cy; y++) {
+                for (var x = 0; x < cx; x++) {
+                    var wwby = 8192 * (((x) / 64) + bw64 * ((y) / 32));
+                    var bbby = 256 * tbl32bc[(((x & 63) / 8) + ((y & 31) / 8) * 8)];
+                    var cc = (y & 7) / 2;
+                    var ccby = 64 * cc;
+                    var pc = (x & 7) + 8 * (y & 1);
 
-                    int offw = 4 * (x + cx * y);
+                    var offw = 4 * (x + cx * y);
 
-                    int offr = readoff + 4 * tbl32pao[pc] + ccby + bbby + wwby;
+                    var offr = readoff + 4 * tbl32pao[pc] + ccby + bbby + wwby;
 
                     pic[offw + 0] = gsram[offr + 0];
                     pic[offw + 1] = gsram[offr + 1];
@@ -174,22 +174,22 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">Height in 64 pixels unit</param>
         /// <returns>4bpp bitmap</returns>
         public static byte[] Decode8(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 64 * bh; wy += 64) {
-                for (int wx = 0; wx < 128 * bw; wx += 128) {
-                    int wlby = 8192 * ((wx / 128) + bw * (wy / 64));
-                    for (int by = 0; by < 64; by += 16) {
-                        for (int bx = 0; bx < 128; bx += 16) {
-                            int blby = 256 * tbl8bc[(bx / 16) + 8 * (by / 16)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int clby = 64 * cc;
-                                byte[] col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
-                                for (int pc = 0; pc < 64; pc++) {
-                                    int offr = wlby + blby + clby + col[pc];
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 64 * bh; wy += 64) {
+                for (var wx = 0; wx < 128 * bw; wx += 128) {
+                    var wlby = 8192 * ((wx / 128) + bw * (wy / 64));
+                    for (var by = 0; by < 64; by += 16) {
+                        for (var bx = 0; bx < 128; bx += 16) {
+                            var blby = 256 * tbl8bc[(bx / 16) + 8 * (by / 16)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var clby = 64 * cc;
+                                var col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
+                                for (var pc = 0; pc < 64; pc++) {
+                                    var offr = wlby + blby + clby + col[pc];
 
-                                    int outx = wx + bx + 0 + (pc % 16);
-                                    int outy = wy + by + 4 * cc + (pc / 16);
-                                    int offw = outx + 128 * bw * outy;
+                                    var outx = wx + bx + 0 + (pc % 16);
+                                    var outy = wy + by + 4 * cc + (pc / 16);
+                                    var offw = outx + 128 * bw * outy;
 
                                     pic[offw] = bin[offr];
                                 }
@@ -209,22 +209,22 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">64 pixels unit</param>
         /// <returns></returns>
         public static byte[] Encode8(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 64 * bh; wy += 64) {
-                for (int wx = 0; wx < 128 * bw; wx += 128) {
-                    int wlby = 8192 * ((wx / 128) + bw * (wy / 64));
-                    for (int by = 0; by < 64; by += 16) {
-                        for (int bx = 0; bx < 128; bx += 16) {
-                            int blby = 256 * tbl8bc[(bx / 16) + 8 * (by / 16)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int clby = 64 * cc;
-                                byte[] col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
-                                for (int pc = 0; pc < 64; pc++) {
-                                    int offr = wlby + blby + clby + col[pc];
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 64 * bh; wy += 64) {
+                for (var wx = 0; wx < 128 * bw; wx += 128) {
+                    var wlby = 8192 * ((wx / 128) + bw * (wy / 64));
+                    for (var by = 0; by < 64; by += 16) {
+                        for (var bx = 0; bx < 128; bx += 16) {
+                            var blby = 256 * tbl8bc[(bx / 16) + 8 * (by / 16)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var clby = 64 * cc;
+                                var col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
+                                for (var pc = 0; pc < 64; pc++) {
+                                    var offr = wlby + blby + clby + col[pc];
 
-                                    int outx = wx + bx + 0 + (pc % 16);
-                                    int outy = wy + by + 4 * cc + (pc / 16);
-                                    int offw = outx + 128 * bw * outy;
+                                    var outx = wx + bx + 0 + (pc % 16);
+                                    var outy = wy + by + 4 * cc + (pc / 16);
+                                    var offw = outx + 128 * bw * outy;
 
                                     pic[offr] = bin[offw];
                                 }
@@ -248,21 +248,21 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="baseoff">gsram write offset</param>
         /// <param name="bw128">128 pixels unit (dest screen width)</param>
         public static void Encode8b(byte[] src, byte[] gsram, int rrw, int rrh, int ddax, int dday, int baseoff, int bw128) {
-            for (int vy = 0; vy < rrh; vy++) {
-                int gy = dday + vy;
-                for (int vx = 0; vx < rrw; vx++) {
-                    int gx = ddax + vx;
+            for (var vy = 0; vy < rrh; vy++) {
+                var gy = dday + vy;
+                for (var vx = 0; vx < rrw; vx++) {
+                    var gx = ddax + vx;
 
-                    int wlby = 8192 * ((gx / 128) + bw128 * (gy / 64));
-                    int blby = 256 * tbl8bc[((gx & 127) / 16) + 8 * ((gy & 63) / 16)];
-                    int cc = (gy & 15) / 4;
-                    int clby = 64 * cc;
-                    byte[] col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
-                    int pc = (gx & 15) + 16 * (gy & 3);
+                    var wlby = 8192 * ((gx / 128) + bw128 * (gy / 64));
+                    var blby = 256 * tbl8bc[((gx & 127) / 16) + 8 * ((gy & 63) / 16)];
+                    var cc = (gy & 15) / 4;
+                    var clby = 64 * cc;
+                    var col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
+                    var pc = (gx & 15) + 16 * (gy & 3);
 
-                    int offwr = baseoff + wlby + blby + clby + col[pc];
+                    var offwr = baseoff + wlby + blby + clby + col[pc];
 
-                    int offr = vx + rrw * vy;
+                    var offr = vx + rrw * vy;
 
                     gsram[offwr] = src[offr];
                 }
@@ -270,19 +270,19 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         }
 
         public static byte[] Decode8c(byte[] gsram, int cx, int cy, int readoff, int bw128) {
-            byte[] pic = new byte[cx * cy];
-            for (int y = 0; y < cy; y++) {
-                for (int x = 0; x < cx; x++) {
-                    int wlby = 8192 * ((x / 128) + bw128 * (y / 64));
-                    int blby = 256 * tbl8bc[((x & 127) / 16) + 8 * ((y & 63) / 16)];
-                    int cc = (y & 15) / 4;
-                    int clby = 64 * cc;
-                    byte[] col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
-                    int pc = (x & 15) + 16 * (y & 3);
+            var pic = new byte[cx * cy];
+            for (var y = 0; y < cy; y++) {
+                for (var x = 0; x < cx; x++) {
+                    var wlby = 8192 * ((x / 128) + bw128 * (y / 64));
+                    var blby = 256 * tbl8bc[((x & 127) / 16) + 8 * ((y & 63) / 16)];
+                    var cc = (y & 15) / 4;
+                    var clby = 64 * cc;
+                    var col = ((cc & 1) == 0) ? tbl8c0 : tbl8c1;
+                    var pc = (x & 15) + 16 * (y & 3);
 
-                    int offr = readoff + wlby + blby + clby + col[pc];
+                    var offr = readoff + wlby + blby + clby + col[pc];
 
-                    int offw = x + cx * y;
+                    var offw = x + cx * y;
 
                     pic[offw] = gsram[offr];
                 }
@@ -323,26 +323,26 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">Height in 128 pixels unit</param>
         /// <returns>4bpp bitmap</returns>
         public static byte[] Decode4(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 128 * bh; wy += 128) {
-                for (int wx = 0; wx < 128 * bw; wx += 128) {
-                    int wlby = 8192 * ((wx / 128) + bw * (wy / 128));
-                    for (int by = 0; by < 128; by += 16) {
-                        for (int bx = 0; bx < 128; bx += 32) {
-                            int blby = 256 * tbl4bc[(bx / 32) + 4 * (by / 16)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int clby = 64 * cc;
-                                int[] col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
-                                for (int pc = 0; pc < 128; pc++) {
-                                    int pxby = (col[pc] / 8);
-                                    int pxbi = (col[pc] % 8);
-                                    byte v = (byte)((bin[wlby + blby + clby + pxby] >> pxbi) & 15);
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 128 * bh; wy += 128) {
+                for (var wx = 0; wx < 128 * bw; wx += 128) {
+                    var wlby = 8192 * ((wx / 128) + bw * (wy / 128));
+                    for (var by = 0; by < 128; by += 16) {
+                        for (var bx = 0; bx < 128; bx += 32) {
+                            var blby = 256 * tbl4bc[(bx / 32) + 4 * (by / 16)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var clby = 64 * cc;
+                                var col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
+                                for (var pc = 0; pc < 128; pc++) {
+                                    var pxby = (col[pc] / 8);
+                                    var pxbi = (col[pc] % 8);
+                                    var v = (byte)((bin[wlby + blby + clby + pxby] >> pxbi) & 15);
 
-                                    int outx = wx + bx + 0 + (pc % 32);
-                                    int outy = wy + by + 4 * cc + (pc / 32);
-                                    int offw = outx + 128 * bw * outy;
+                                    var outx = wx + bx + 0 + (pc % 32);
+                                    var outy = wy + by + 4 * cc + (pc / 32);
+                                    var offw = outx + 128 * bw * outy;
 
-                                    byte tv = pic[offw / 2];
+                                    var tv = pic[offw / 2];
                                     if (0 == (offw & 1)) { //!
                                         tv &= 0x0f;
                                         tv |= (byte)(v << 4);
@@ -369,22 +369,22 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bh">128 pixels unit</param>
         /// <returns></returns>
         public static byte[] Encode4(byte[] bin, int bw, int bh) {
-            byte[] pic = new byte[bin.Length];
-            for (int wy = 0; wy < 128 * bh; wy += 128) {
-                for (int wx = 0; wx < 128 * bw; wx += 128) {
-                    int wlby = 8192 * ((wx / 128) + bw * (wy / 128));
-                    for (int by = 0; by < 128; by += 16) {
-                        for (int bx = 0; bx < 128; bx += 32) {
-                            int blby = 256 * tbl4bc[(bx / 32) + 4 * (by / 16)];
-                            for (int cc = 0; cc < 4; cc++) {
-                                int clby = 64 * cc;
-                                int[] col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
-                                for (int pc = 0; pc < 128; pc++) {
-                                    int outx = wx + bx + 0 + (pc % 32);
-                                    int outy = wy + by + 4 * cc + (pc / 32);
-                                    int offw = outx + 128 * bw * outy;
+            var pic = new byte[bin.Length];
+            for (var wy = 0; wy < 128 * bh; wy += 128) {
+                for (var wx = 0; wx < 128 * bw; wx += 128) {
+                    var wlby = 8192 * ((wx / 128) + bw * (wy / 128));
+                    for (var by = 0; by < 128; by += 16) {
+                        for (var bx = 0; bx < 128; bx += 32) {
+                            var blby = 256 * tbl4bc[(bx / 32) + 4 * (by / 16)];
+                            for (var cc = 0; cc < 4; cc++) {
+                                var clby = 64 * cc;
+                                var col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
+                                for (var pc = 0; pc < 128; pc++) {
+                                    var outx = wx + bx + 0 + (pc % 32);
+                                    var outy = wy + by + 4 * cc + (pc / 32);
+                                    var offw = outx + 128 * bw * outy;
 
-                                    byte tv = bin[offw / 2];
+                                    var tv = bin[offw / 2];
                                     if (0 != (offw & 1)) { // upper //!
                                         tv &= 15;
                                     }
@@ -392,10 +392,10 @@ namespace OpenKh.Unity.MdlxMset.Encoding
                                         tv >>= 4;
                                     }
 
-                                    int pxby = (col[pc] / 8);
-                                    int pxbi = (col[pc] % 8);
-                                    int offr = wlby + blby + clby + pxby;
-                                    byte v = pic[offr];
+                                    var pxby = (col[pc] / 8);
+                                    var pxbi = (col[pc] % 8);
+                                    var offr = wlby + blby + clby + pxby;
+                                    var v = pic[offr];
                                     if (pxbi == 0) { // lower
                                         v &= 0xf0;
                                         v |= tv;
@@ -426,22 +426,22 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="baseoff">gsram write offset</param>
         /// <param name="bw128">128 pixels unit (dest screen width)</param>
         public static void Encode4b(byte[] src, byte[] gsram, int rrw, int rrh, int ddax, int dday, int baseoff, int bw128) {
-            for (int vy = 0; vy < rrh; vy++) {
-                int gy = dday + vy;
-                for (int vx = 0; vx < rrw; vx++) {
-                    int gx = ddax + vx;
+            for (var vy = 0; vy < rrh; vy++) {
+                var gy = dday + vy;
+                for (var vx = 0; vx < rrw; vx++) {
+                    var gx = ddax + vx;
 
-                    int wlby = 8192 * ((gx / 128) + bw128 * (gy / 128));
-                    int blby = 256 * tbl4bc[((gx & 127) / 32) + 4 * ((gy & 127) / 16)];
+                    var wlby = 8192 * ((gx / 128) + bw128 * (gy / 128));
+                    var blby = 256 * tbl4bc[((gx & 127) / 32) + 4 * ((gy & 127) / 16)];
 
-                    int cc = (gy & 15) / 4;
-                    int clby = 64 * cc;
-                    int[] col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
-                    int pc = (gx & 31) + 32 * (gy & 3);
+                    var cc = (gy & 15) / 4;
+                    var clby = 64 * cc;
+                    var col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
+                    var pc = (gx & 31) + 32 * (gy & 3);
 
-                    int offr = vx + rrw * vy;
+                    var offr = vx + rrw * vy;
 
-                    byte tv = src[offr / 2];
+                    var tv = src[offr / 2];
                     if (0 != (offr & 1)) { // upper //!
                         tv &= 15;
                     }
@@ -449,10 +449,10 @@ namespace OpenKh.Unity.MdlxMset.Encoding
                         tv >>= 4;
                     }
 
-                    int pxby = (col[pc] / 8);
-                    int pxbi = (col[pc] % 8);
-                    int offwr = baseoff + wlby + blby + clby + pxby;
-                    byte v = gsram[offwr];
+                    var pxby = (col[pc] / 8);
+                    var pxbi = (col[pc] % 8);
+                    var offwr = baseoff + wlby + blby + clby + pxby;
+                    var v = gsram[offwr];
                     if (pxbi == 0) { // lower
                         v &= 0xf0;
                         v |= tv;
@@ -476,24 +476,24 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         /// <param name="bw128"></param>
         /// <returns></returns>
         public static byte[] Decode4c(byte[] gsram, int cx, int cy, int readoff, int bw128) {
-            byte[] pic = new byte[(cx * cy + 1) / 2];
-            for (int y = 0; y < cy; y++) {
-                for (int x = 0; x < cx; x++) {
-                    int wlby = 8192 * ((x / 128) + bw128 * (y / 128));
+            var pic = new byte[(cx * cy + 1) / 2];
+            for (var y = 0; y < cy; y++) {
+                for (var x = 0; x < cx; x++) {
+                    var wlby = 8192 * ((x / 128) + bw128 * (y / 128));
 
-                    int blby = 256 * tbl4bc[((x & 127) / 32) + 4 * ((y & 127) / 16)];
+                    var blby = 256 * tbl4bc[((x & 127) / 32) + 4 * ((y & 127) / 16)];
 
-                    int cc = (y & 15) / 4;
-                    int clby = 64 * cc;
-                    int[] col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
-                    int pc = (x & 31) + 32 * (y & 3);
-                    int pxby = (col[pc] / 8);
-                    int pxbi = (col[pc] % 8);
-                    byte v = (byte)((gsram[readoff + wlby + blby + clby + pxby] >> pxbi) & 15);
+                    var cc = (y & 15) / 4;
+                    var clby = 64 * cc;
+                    var col = ((cc & 1) == 0) ? tbl4col0 : tbl4col1;
+                    var pc = (x & 31) + 32 * (y & 3);
+                    var pxby = (col[pc] / 8);
+                    var pxbi = (col[pc] % 8);
+                    var v = (byte)((gsram[readoff + wlby + blby + clby + pxby] >> pxbi) & 15);
 
-                    int offw = x + cx * y;
+                    var offw = x + cx * y;
 
-                    byte tv = pic[offw / 2];
+                    var tv = pic[offw / 2];
                     if (0 == (offw & 1)) {
                         tv &= 0x0f;
                         tv |= (byte)(v << 4);

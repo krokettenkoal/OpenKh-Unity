@@ -1,7 +1,7 @@
-namespace OpenKh.Unity.MdlxMset.Encoding
+namespace OpenKh.Unity.MdlxMset.Binary
 {
     class KHcv4pal {
-        readonly static sbyte[] tbl = new sbyte[] {
+        readonly static sbyte[] tbl = {
             /**/ 0, 1, 4, 5, 8, 9,12,13,
             /**/ 2, 3, 6, 7,10,11,14,15,
         };
@@ -10,7 +10,7 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         }
     }
     class KHcv8pal {
-        readonly static sbyte[] tbl = new sbyte[] {
+        readonly static sbyte[] tbl = {
             0,
             0,
             6,
@@ -145,25 +145,25 @@ namespace OpenKh.Unity.MdlxMset.Encoding
         }
     }
     class KHcv8pal_v2 {
-        readonly static byte[] alt = new byte[] {
+        readonly static byte[] alt = {
             /**/ 0, 1, 2, 3, 4, 5, 6, 7,16,17,18,19,20,21,22,23,
             /**/ 8, 9,10,11,12,13,14,15,24,25,26,27,28,29,30,31,
         };
         public static void repl(byte[] bSrc, int offSrc, byte[] bDst, int offDst) {
-            for (int x = 0; x < 256; x++) {
-                for (int t = 0; t < 4; t++)
+            for (var x = 0; x < 256; x++) {
+                for (var t = 0; t < 4; t++)
                     bDst[offDst + 4 * (x) + t] = bSrc[offSrc + 4 * (alt[(x & 31)] + (x & (~31))) + t];
             }
         }
     }
     class KHcv4pal_v2 {
-        readonly static sbyte[] tbl = new sbyte[] {
+        readonly static sbyte[] tbl = {
             /**/ 0, 1, 4, 5, 8, 9,12,13,
             /**/ 2, 3, 6, 7,10,11,14,15,
         };
         public static void repl(byte[] bSrc, int offSrc, byte[] bDst, int offDst) {
-            for (int x = 0; x < 16; x++) {
-                for (int t = 0; t < 4; t++)
+            for (var x = 0; x < 16; x++) {
+                for (var t = 0; t < 4; t++)
                     bDst[offDst + 4 * (x) + t] = bSrc[offSrc + 4 * (tbl[x]) + t];
             }
         }

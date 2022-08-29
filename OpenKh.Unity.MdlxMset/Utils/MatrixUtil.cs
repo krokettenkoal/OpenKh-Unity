@@ -1,7 +1,6 @@
 using UnityEngine;
-using UnityEngine.UIElements;
 
-namespace OpenKh.OpenKh.Unity.MdlxMset
+namespace OpenKh.Unity.MdlxMset.Utils
 {
     public static class MatrixUtil
     {

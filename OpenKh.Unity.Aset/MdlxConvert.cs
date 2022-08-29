@@ -3,16 +3,16 @@ using System.IO;
 using System.Collections.Generic;
 using UnityEngine;
 using ef1Declib;
-using OpenKh.OpenKh.Unity.MdlxMset;
 using OpenKh.Unity.MdlxMset.Model;
 using OpenKh.Unity.MdlxMset.Motion;
 using OpenKh.Unity.MdlxMset.Binary;
 using OpenKh.Unity.MdlxMset.Texture;
 using OpenKh.Unity.MdlxMset.Utils;
+using OpenKh.Unity.Aset.Interfaces;
+using OpenKh.Unity.Aset.IO;
 using Mesh = OpenKh.Unity.MdlxMset.Model.Mesh;
-using OpenKh.Unity.AsetExport.Interfaces;
 
-namespace OpenKh.Unity.AsetExport
+namespace OpenKh.Unity.Aset
 {
     public class MdlxConvert : IControllerBindable, IDisposable {
 
@@ -440,21 +440,7 @@ namespace OpenKh.Unity.AsetExport
             }
         }
 
-
         private void ResetDevice() {
-            /*
-            if (DxDevice == null)
-                return;
-
-            DxDevice.SetRenderState(RenderState.Lighting, false);
-            DxDevice.SetRenderState(RenderState.ZEnable, true);
-
-            DxDevice.SetRenderState(RenderState.AlphaBlendEnable, true);
-            DxDevice.SetRenderState(RenderState.SourceBlend, Blend.SourceAlpha);
-            DxDevice.SetRenderState(RenderState.DestinationBlend, Blend.InverseSourceAlpha);
-            */
-            //device.SetRenderState(RenderState.CullMode, Cull.Clockwise);
-
             ReloadTextures(-1);
         }
         private void ReloadTextures(int ty) {

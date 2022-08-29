@@ -5,10 +5,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
-using OpenKh.Unity.MdlxMset.Encoding;
 using OpenKh.Unity.MdlxMset.Texture;
 
-namespace OpenKh.Unity.MdlxMset.Model {
+namespace OpenKh.Unity.MdlxMset.Binary {
     public class TIMReader {
         public static Texex2 Load(Stream fs) {
             var alt = new Texex2();

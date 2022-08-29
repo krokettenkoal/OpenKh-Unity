@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace OpenKh.Unity.MdlxMset.Model
+namespace OpenKh.Unity.MdlxMset.Texture
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct PTex3 {

@@ -1,4 +1,4 @@
-namespace OpenKh.Unity.AsetExport
+namespace OpenKh.Unity.Aset.IO
 {
     public struct ExportStatus
     {
