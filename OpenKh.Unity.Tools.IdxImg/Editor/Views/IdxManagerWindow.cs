@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using OpenKh.Kh2;
+using OpenKh.Unity.Exporter.Progress;
 using OpenKh.Unity.Tools.IdxImg.Interfaces;
 using OpenKh.Unity.Tools.IdxImg.IO;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
@@ -226,8 +227,19 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             //Debug.Log($"Opening IDX ({idxFilePath}) and IMG ({imgFilePath})");
 
+            var status = new OperationStatus
+            {
+                Current = 1,
+                Total = 1,
+                Message = Path.GetFileName(idxFilePath),
+                OperationType = "IDX load",
+                Phase = 0,
+                
+            };
+
             //  PROGRESS BAR
-            ImporterUtils.Progress("Opening IDX/IMG file..", $"Validating {Path.GetFileName(idxFilePath)}..", 0);
+            if (OpProgress.Cancellable(status))
+                return;
 
             //  Validate & read IDX file
             using var idxStream = File.OpenRead(idxFilePath);
@@ -235,12 +247,17 @@ namespace OpenKh.Unity.Tools.IdxImg
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
 
             //  PROGRESS BAR
-            ImporterUtils.Progress("Opening IDX/IMG file..", $"Opening {Path.GetFileName(idxFilePath)}..", .1f);
+            status.State = OperationState.Initialization;
+            status.ProgressFactor = .1f;
+            if (OpProgress.Cancellable(status))
+                return;
 
             var idx = Idx.Read(idxStream);
 
             //  PROGRESS BAR
-            ImporterUtils.Progress("Opening IDX/IMG file..", $"Opening {Path.GetFileName(imgFilePath)}..", .2f);
+            status.ProgressFactor = .2f;
+            if (OpProgress.Cancellable(status))
+                return;
 
             //  Read IMG file
             _imgStream?.Dispose();
@@ -248,7 +265,13 @@ namespace OpenKh.Unity.Tools.IdxImg
             AssetImporter.ActiveImg = new Img(_imgStream, idx, false);
 
             //  PROGRESS BAR
-            ImporterUtils.Progress("Opening IDX/IMG file..", "Reading file structure..", .8f);
+            status.ProgressFactor = .8f;
+            if (OpProgress.Cancellable(status))
+            {
+                _imgStream?.Dispose();
+                _imgStream = null;
+                return;
+            }
 
             Root = new List<RootViewModel>
             {
@@ -259,13 +282,32 @@ namespace OpenKh.Unity.Tools.IdxImg
             AssetImporter.ActiveImgPath = imgFilePath;
 
             //  PROGRESS BAR
-            ImporterUtils.Progress("Opening IDX/IMG file..", "Refreshing..", .9f);
+            status.State = OperationState.Saving;
+            status.ProgressFactor = .9f;
+            if (OpProgress.Cancellable(status))
+            {
+                _imgStream?.Dispose();
+                _imgStream = null;
+                Root.Clear();
+                return;
+            }
 
             m_Tree.SetRootItems(Root.Select(rvm => rvm.GetTreeData()).ToList());
             m_Tree.Rebuild();
 
+            status.State = OperationState.Finished;
+            status.ProgressFactor = 1;
+            if (OpProgress.Cancellable(status))
+            {
+                _imgStream?.Dispose();
+                _imgStream = null;
+                Root.Clear();
+                m_Tree.Clear();
+                return;
+            }
+
             //  PROGRESS BAR
-            ImporterUtils.ClearProgress();
+            OpProgress.Clear();
         }
         
         #endregion

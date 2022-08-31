@@ -1,3 +1,5 @@
+// Source: https://stackoverflow.com/a/4171168
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,8 +1,7 @@
 using System;
-using OpenKh.Unity.Exporter.Interfaces;
 
 namespace OpenKh.Unity.Exporter.Progress {
-    public class ExportProgress<T> where T : IExportStatus
+    public class OperationProgress
     {
         private bool _cancel;
         public bool CancellationPending {
@@ -15,15 +14,18 @@ namespace OpenKh.Unity.Exporter.Progress {
             private set => _cancel = value;
         }
 
-        public event Action<OperationState, T> OnProgress;
-        public event Func<OperationState, T, bool> OnProgressCancellable; 
-        public void Update(OperationState state, T status)
+        public event Action<OperationStatus> OnProgress;
+        public event Func<OperationStatus, bool> OnProgressCancellable; 
+        public void Update(OperationStatus status)
         {
-            OnProgress?.Invoke(state, status);
-            var cancel = OnProgressCancellable?.Invoke(state, status);
+            OnProgress?.Invoke(status);
+            var cancel = OnProgressCancellable?.Invoke(status);
 
             if (cancel is true)
+            {
+                status.State = OperationState.Cancelling;
                 Cancel();
+            }
         }
         public void Cancel() {
             CancellationPending = true;

@@ -147,8 +147,8 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         private static bool ExportAssets() =>
             ExportableAssets.Any(asset => ViewModelExtensions.GetAssetFormat(asset) switch
             {
-                AssetFormat.Mdlx => !MotionExport.ToAset(asset, ImporterUtils.AsetExportProgressCancel, out _),
-                AssetFormat.Mset => !MotionExport.ToMson(asset, ImporterUtils.ExportProgressCancel, out _),
+                AssetFormat.Mdlx => !MotionExport.ToAset(asset, OpProgress.Cancellable, out _, CurrentPhase),
+                AssetFormat.Mset => !MotionExport.ToMson(asset, OpProgress.Cancellable, out _, CurrentPhase),
                 _ => false,
             });
         /// <summary>
@@ -159,15 +159,19 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         {
             var current = 0;
             var total = ExportableAssets.Count();
-            var status = new ProcessStatus();
+            var status = new OperationStatus
+            {
+                OperationType = "FBX import",
+                Total = total,
+                Phase = CurrentPhase,
+            };
             
             foreach (var asset in ExportableAssets)
             {
-                status.Title = $"Importing FBX ({current} / {total})";
                 status.Message = Path.GetFileNameWithoutExtension(asset) + ".fbx";
-                status.Progress = (float) current / total;
+                status.Current = current;
                 
-                if (ImporterUtils.ProcessProgressCancel(status))
+                if (OpProgress.Cancellable(status))
                     return true;
 
                 if (!MotionExport.ToFbx(asset))
@@ -178,7 +182,49 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
 
             return false;
         }
+        /// <summary>
+        /// [Phase 4] Clean up temporary files
+        /// </summary>
+        /// <returns>True if the operation was successful, false if it failed or was cancelled by the user</returns>
+        private static bool CleanUp()
+        {
+            if (!Directory.Exists(PackageInfo.TempDir))
+                return true;
 
+            var total = ExtractedAssets.Count();
+            var status = new OperationStatus
+            {
+                OperationType = "Cleanup",
+                Phase = CurrentPhase,
+                Message = "Starting cleanup..",
+                Total = total,
+            };
+
+            if (OpProgress.Cancellable(status))
+                return false;
+
+            status.State = OperationState.Processing;
+
+            foreach (var asset in ExtractedAssets)
+            {
+                status.Current++;
+                status.Message = Path.GetFileName(asset);
+
+                if (OpProgress.Cancellable(status))
+                    return false;
+
+                File.Delete(asset);
+            }
+
+            Directory.Delete(PackageInfo.TempDir, true);
+
+            status.State = OperationState.Finished;
+            status.Current = total;
+
+            OpProgress.Display(status);
+
+            return true;
+        }
         #endregion
 
         #region Main import method
@@ -191,33 +237,42 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         {
             try
             {
-                #region PHASE 1: Dump
-                
-                var extractStatus = new ExtractStatus
-                {
-                    current = -1,
-                    total = assets.Count,
-                };
+                #region PHASE 0: Pre-cleanup
 
-                //  Phase 1
-                CurrentPhase++;
+                if (!CleanUp())
+                    throw new OperationCanceledException();
+
+                #endregion
+
+                #region PHASE 1: Dump
+
+                var extractStatus = new OperationStatus
+                {
+                    OperationType = "Asset dump",
+                    Current = 0,
+                    Total = assets.Count,
+                    Phase = ++CurrentPhase,
+                };
 
                 //  Extract checked assets
                 foreach (var fvm in assets)
                 {
                     //Debug.Log($"Extracting {fvm.Name} ..");
 
-                    extractStatus.FileName = fvm.FullName;
-                    extractStatus.current++;
+                    extractStatus.Message = fvm.FullName;
+                    extractStatus.Current++;
+                    extractStatus.State = OperationState.Processing;
 
-                    if (ImporterUtils.DumpProgressCancel(OperationState.Processing, extractStatus))
+                    if (OpProgress.Cancellable(extractStatus))
                         throw new OperationCanceledException();
 
                     if(!DumpAsset(fvm))
                         Debug.LogWarning($"Could not extract {fvm.FullName}");
                 }
 
-                if (ImporterUtils.DumpProgressCancel(OperationState.Finished, extractStatus))
+                extractStatus.State = OperationState.Finished;
+
+                if (OpProgress.Cancellable(extractStatus))
                     throw new OperationCanceledException();
                 
                 #endregion
@@ -235,10 +290,13 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
 
                 #region PHASE 3: Convert/import
 
-                //  Phase 3
-                CurrentPhase++;
+                var tmpStatus = new OperationStatus
+                {
+                    OperationType = "FBX import",
+                    Phase = ++CurrentPhase,
+                };
 
-                if (ImporterUtils.ProgressCancel("Asset import", "Converting assets..", 0))
+                if (OpProgress.Cancellable(tmpStatus))
                     throw new OperationCanceledException();
 
                 //  Convert assets to Unity-supported file formats
@@ -246,6 +304,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
                     throw new OperationCanceledException();
 
                 #endregion
+
             }
             catch (Exception ex)
             {
@@ -261,7 +320,16 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
             }
             finally
             {
-                ImporterUtils.ClearProgress();
+                #region PHASE 4: Cleanup
+
+                CurrentPhase++;
+
+                if (!CleanUp())
+                    throw new OperationCanceledException();
+
+                #endregion
+
+                OpProgress.Clear();
                 CurrentPhase = 0;
             }
 

@@ -10,7 +10,6 @@ using OpenKh.Unity.Exporter.Aset.Model;
 using OpenKh.Unity.Exporter.Aset.Motion;
 using OpenKh.Unity.Exporter.Aset.Texture;
 using OpenKh.Unity.Exporter.Aset.Utils;
-using OpenKh.Unity.Exporter.Interfaces;
 using OpenKh.Unity.Exporter.Progress;
 
 namespace OpenKh.Unity.Exporter.Aset
@@ -519,15 +518,16 @@ namespace OpenKh.Unity.Exporter.Aset
         /// </summary>
         /// <param name="progress">Event handler for progress updates</param>
         /// <returns>True if the export has been successful</returns>
-        public bool ExportASET(ExportProgress<AsetExportStatus> progress, out string outFilePath) {
+        public bool ExportASET(OperationProgress progress, out string outFilePath, int phase = -1) {
             var status = new AsetExportStatus
             {
                 FileName = Path.GetFileNameWithoutExtension(MdlxPath),
+                Phase = phase,
             };
 
             outFilePath = string.Empty;
 
-            progress.Update(OperationState.Initialization, status);
+            progress.Update(status);
 
             if (progress.CancellationPending)
             {
@@ -552,8 +552,8 @@ namespace OpenKh.Unity.Exporter.Aset
             var bone_count = t.t21 != null ? t.t21.axBones.Count : 0;
             var anim_count = Motions.Count;
 
-            status.animCount = anim_count;
-            status.jointCount = bone_count;
+            status.AnimCount = anim_count;
+            status.JointCount = bone_count;
             _ = mat_writer.BaseStream.Position;
 
             mat_writer.Write(new[] { 'A', 'S', 'E', 'T' }); // bone count (4 bytes)
@@ -567,7 +567,7 @@ namespace OpenKh.Unity.Exporter.Aset
             // move past animation offset array
             mat_writer.BaseStream.Position += (anim_count * 4 + 0x0F) & ~0x0F;
 
-            progress.Update(OperationState.Initialization, status);
+            progress.Update(status);
 
             if (progress.CancellationPending) {
                 return false;
@@ -581,18 +581,19 @@ namespace OpenKh.Unity.Exporter.Aset
 
                 var anim_name = motion.motion.id;
 
-                status.animName = anim_name;
-                status.animIndex = anim_num;
+                status.AnimName = anim_name;
+                status.AnimIndex = anim_num;
 
                 anim_name = anim_name.Replace('#', '_');
 
                 // get motion info
                 var max_ticks = (int)motion.maxtick;
 
-                status.frameIndex = 0;
-                status.frameCount = max_ticks;
+                status.FrameIndex = 0;
+                status.FrameCount = max_ticks;
 
-                progress.Update(OperationState.Processing, status);
+                status.State = OperationState.Processing;
+                progress.Update(status);
 
                 if (progress.CancellationPending) {
                     return false;
@@ -627,10 +628,10 @@ namespace OpenKh.Unity.Exporter.Aset
 
                 // output all the matrix transforms for each frame
                 for (var i = 0; i < max_ticks; i++) {
-                    status.frameIndex = i;
-                    status.jointIndex = 0;
+                    status.FrameIndex = i;
+                    status.JointIndex = 0;
 
-                    progress.Update(OperationState.Processing, status);
+                    progress.Update(status);
 
                     if (progress.CancellationPending) {
                         return false;
@@ -641,7 +642,7 @@ namespace OpenKh.Unity.Exporter.Aset
                     // output each matrix for each bone (matrix4x4 * 4 bytes)
 
                     for (var bn = 0; bn < bone_count; ++bn) {
-                        status.jointIndex = bn;
+                        status.JointIndex = bn;
 
                         //worker.ReportProgress((int)OperationState.Processing, progress);
 
@@ -680,13 +681,13 @@ namespace OpenKh.Unity.Exporter.Aset
                         mat_writer.Write(mat.m33);
                     }
 
-                    progress.Update(OperationState.Processing, status);
+                    progress.Update(status);
                 }
 
-                progress.Update(OperationState.Processing, status);
+                progress.Update(status);
             }
 
-            progress.Update(OperationState.Processing, status);
+            progress.Update(status);
 
             // reset animation data position
             mat_writer.BaseStream.Position = 0x0C;
@@ -701,7 +702,8 @@ namespace OpenKh.Unity.Exporter.Aset
             // Open the file
             var outfile = File.Open(outFilePath, FileMode.Create, FileAccess.ReadWrite);
 
-            progress.Update(OperationState.Saving, status);
+            status.State = OperationState.Saving;
+            progress.Update(status);
 
             // Output all the bytes to a file
             var b_data = mat_data.ToArray();
@@ -710,7 +712,9 @@ namespace OpenKh.Unity.Exporter.Aset
 
             outfile.Close();
 
-            progress.Update(OperationState.Finished, status);
+            status.State = OperationState.Finished;
+            progress.Update(status);
+
             //MessageBox.Show("Animation transforms dumped.", this.Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
 
             return true;

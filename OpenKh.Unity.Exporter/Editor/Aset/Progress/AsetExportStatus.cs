@@ -1,23 +1,34 @@
-using OpenKh.Unity.Exporter.Interfaces;
+using OpenKh.Unity.Exporter.Progress;
 
 namespace OpenKh.Unity.Exporter.Aset.Progress
 {
-    public class AsetExportStatus : IExportStatus
+    public class AsetExportStatus : OperationStatus
     {
-        public string ExportType => "ASET";
+        public override string OperationType => "ASET export";
+        public override string Message => $"{FileName}: {AnimName}";
+        
         public string FileName { get; set; }
-        public string animName;
+        public string AnimName { get; set; }
 
-        public int animCount;
-        public int animIndex;
+        public int AnimCount { get; set; }
+        public int AnimIndex { get; set; }
 
-        public int frameCount;
-        public int frameIndex;
+        public int FrameCount { get; set; }
+        public int FrameIndex { get; set; }
 
-        public int jointCount;
-        public int jointIndex;
+        public int JointCount { get; set; }
+        public int JointIndex { get; set; }
 
-        public float Progress => (float)animIndex / animCount;
+        public override int Current
+        {
+            get => AnimIndex;
+            set => AnimIndex = value;
+        }
+        public override int Total
+        {
+            get => AnimCount;
+            set => AnimCount = value;
+        }
 
     }
 }
