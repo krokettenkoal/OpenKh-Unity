@@ -10,12 +10,16 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using AssetImporter = OpenKh.Unity.Tools.IdxImg.IO.AssetImporter;
+using UnityEditor.UIElements;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
     // Abstract base class for all windows that display IDX/IMG file contents.
     public abstract class IdxManagerWindow : EditorWindow, IIdxManager
     {
+        #region Fields
+
+        
         //  Visual tree assets
         [SerializeField]
         protected VisualTreeAsset m_VisualTreeAsset = default;
@@ -23,6 +27,8 @@ namespace OpenKh.Unity.Tools.IdxImg
         protected VisualTreeAsset m_TreeViewAsset = default;
         [SerializeField]
         protected VisualTreeAsset m_EntryViewAsset = default;
+        [SerializeField]
+        protected VisualTreeAsset m_TreeSearchAsset = default;
 
         //  Views
         protected VisualElement m_RootElement;
@@ -31,6 +37,11 @@ namespace OpenKh.Unity.Tools.IdxImg
         protected VisualElement m_EntryView;
         protected MultiColumnTreeView m_Tree;
         protected VisualElement m_Entry;
+        protected VisualElement m_TreeSearch;
+
+        //  Toolbar
+        protected ToolbarButton m_OpenFile;
+        protected ToolbarButton m_ImportAssets;
 
         //  Miscellaneous Labels/VisualElements
         protected Label m_Title;
@@ -42,11 +53,20 @@ namespace OpenKh.Unity.Tools.IdxImg
         protected LongField m_UncompressedSize;
         protected Toggle m_Compress;
         protected Toggle m_Stream;
+        protected TextField m_Search;
 
         //  File streams
         protected Stream _imgStream;
 
+        #endregion
+
+        #region Properties
+
         internal List<RootViewModel> Root { get; private set; }
+
+        #endregion
+
+        #region Initialization
 
         protected virtual void Init(VisualElement root)
         {
@@ -57,12 +77,18 @@ namespace OpenKh.Unity.Tools.IdxImg
             m_MainPanel = new TwoPaneSplitView(0, 260, TwoPaneSplitViewOrientation.Horizontal);
             m_TreeView = m_TreeViewAsset.Instantiate();
             m_EntryView = m_EntryViewAsset.Instantiate();
+            m_TreeSearch = m_TreeSearchAsset.Instantiate();
 
+            m_TreeView.Add(m_TreeSearch);
             m_MainPanel.Add(m_TreeView);
             m_MainPanel.Add(m_EntryView);
             rootVisualElement.Add(m_MainPanel);
             m_Tree = m_TreeView.Q<MultiColumnTreeView>("IdxImgTree");
             m_Entry = m_EntryView.Q<VisualElement>("IdxImgEntry");
+            m_Search = m_TreeSearch.Q<TextField>("IdxImgTreeSearch");
+
+            m_OpenFile = m_RootElement.Q<ToolbarButton>("OpenFiles");
+            m_ImportAssets = m_RootElement.Q<ToolbarButton>("ImportAssets");
 
             m_Title = m_Entry.Q<Label>("Title");
 
@@ -73,7 +99,81 @@ namespace OpenKh.Unity.Tools.IdxImg
             m_Compress = m_Entry.Q<Toggle>("Compress");
             m_Stream = m_Entry.Q<Toggle>("Stream");
         }
+        protected virtual void AddListeners()
+        {
+            m_Search.RegisterValueChangedCallback(SearchTree);
+        }
 
+        #endregion
+
+        #region Tree search
+
+        private void SearchTree(ChangeEvent<string> ev)
+        {
+            if (Root is null || Root.Count == 0)
+                return;
+
+            var query = ev.newValue;
+
+            if (string.IsNullOrEmpty(query))
+            {
+                ClearFilter();
+                return;
+            }
+
+            if (query.Length < 3)
+                return;
+
+            //Debug.Log($"Searching tree for '{query}'");
+
+            var results = Root[0]
+                .Where(evm => FilterEntry(evm, query))
+                .Select(evm => evm.GetTreeData())
+                .ToList();
+
+            //Debug.Log($"{results.Count} results:");
+            //Debug.Log(string.Join(", ", results.Select(r => r.data.Name)));
+
+            m_Tree.SetRootItems(results);
+            m_Tree.Rebuild();
+        }
+        private void ClearFilter()
+        {
+            m_Tree.SetRootItems(Root.Select(rvm => rvm.GetTreeData()).ToList());
+            m_Tree.Rebuild();
+        }
+        protected virtual bool FilterEntry(EntryViewModel evm, string query)
+        {
+            return evm.Name.ToLowerInvariant().Contains(query.ToLowerInvariant());
+        }
+
+        #endregion
+
+        #region IIdxManager
+
+        //  IIdxManager implementation
+        public Stream OpenFileFromIdx(string fileName) =>
+            AssetImporter.ActiveImg.FileOpen(fileName);
+
+        public Stream OpenFileFromIdx(Idx.Entry idxEntry) =>
+            AssetImporter.ActiveImg.FileOpen(idxEntry);
+
+        #endregion
+
+        #region Entry view
+
+        protected void UpdateEntryView(IEnumerable<object> selection)
+        {
+            var active = selection.OfType<FileViewModel>().FirstOrDefault();
+
+            if (active is null)
+            {
+                HideEntryView();
+                return;
+            }
+
+            SetEntryView(active);
+        }
         protected void SetEntryView(FileViewModel fvm)
         {
             if(m_Title != null)
@@ -88,11 +188,14 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             m_Entry.RemoveFromClassList("invisible");
         }
-
         protected void HideEntryView()
         {
             m_Entry.AddToClassList("invisible");
         }
+
+        #endregion
+
+        #region Event handlers
 
         protected void OpenIdxImgFiles()
         {
@@ -124,7 +227,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             //Debug.Log($"Opening IDX ({idxFilePath}) and IMG ({imgFilePath})");
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Validating {Path.GetFileName(idxFilePath)}..", 0);
+            ImporterUtils.Progress("Opening IDX/IMG file..", $"Validating {Path.GetFileName(idxFilePath)}..", 0);
 
             //  Validate & read IDX file
             using var idxStream = File.OpenRead(idxFilePath);
@@ -132,12 +235,12 @@ namespace OpenKh.Unity.Tools.IdxImg
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Opening {Path.GetFileName(idxFilePath)}..", .1f);
+            ImporterUtils.Progress("Opening IDX/IMG file..", $"Opening {Path.GetFileName(idxFilePath)}..", .1f);
 
             var idx = Idx.Read(idxStream);
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", $"Opening {Path.GetFileName(imgFilePath)}..", .2f);
+            ImporterUtils.Progress("Opening IDX/IMG file..", $"Opening {Path.GetFileName(imgFilePath)}..", .2f);
 
             //  Read IMG file
             _imgStream?.Dispose();
@@ -145,7 +248,7 @@ namespace OpenKh.Unity.Tools.IdxImg
             AssetImporter.ActiveImg = new Img(_imgStream, idx, false);
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Reading file structure..", .8f);
+            ImporterUtils.Progress("Opening IDX/IMG file..", "Reading file structure..", .8f);
 
             Root = new List<RootViewModel>
             {
@@ -156,20 +259,25 @@ namespace OpenKh.Unity.Tools.IdxImg
             AssetImporter.ActiveImgPath = imgFilePath;
 
             //  PROGRESS BAR
-            EditorUtility.DisplayProgressBar("Opening IDX/IMG file..", "Refreshing..", .9f);
+            ImporterUtils.Progress("Opening IDX/IMG file..", "Refreshing..", .9f);
 
             m_Tree.SetRootItems(Root.Select(rvm => rvm.GetTreeData()).ToList());
             m_Tree.Rebuild();
 
             //  PROGRESS BAR
-            EditorUtility.ClearProgressBar();
+            ImporterUtils.ClearProgress();
         }
+        
+        #endregion
 
-        //  IIdxManager implementation
-        public Stream OpenFileFromIdx(string fileName) =>
-            AssetImporter.ActiveImg.FileOpen(fileName);
+        #region Static methods
 
-        public Stream OpenFileFromIdx(Idx.Entry idxEntry) =>
-            AssetImporter.ActiveImg.FileOpen(idxEntry);
+        protected static bool HasMdlxMsetPair(IEnumerable<FileViewModel> assets)
+        {
+            var mdlx = assets.Where(fvm => fvm.IsMdlx());
+            return mdlx.Any(mvm => assets.Any(fvm => fvm.FullName == Path.ChangeExtension(mvm.FullName, ".mset")));
+        }
+        
+        #endregion
     }
 }

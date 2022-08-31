@@ -70,6 +70,18 @@ namespace OpenKh.Unity.Tools.IdxImg
 
             return null;
         }
+        public static bool Contains(this EntryViewModel node, Func<EntryViewModel, bool> fn)
+        {
+            if (fn(node))
+                return true;
+
+            if (node is NodeViewModel nvm)
+            {
+                return nvm.Children.Select(child => child.Contains(fn)).FirstOrDefault(n => n);
+            }
+
+            return false;
+        }
 
         public static TreeViewItemData<EntryViewModel> GetTreeData(this EntryViewModel evm) => evm switch
         {

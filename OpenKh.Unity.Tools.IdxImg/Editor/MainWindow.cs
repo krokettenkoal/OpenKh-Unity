@@ -1,36 +1,27 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using OpenKh.Unity.Aset;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
-using OpenKh.Unity.Tools.IdxImg.IO;
 using AssetImporter = OpenKh.Unity.Tools.IdxImg.IO.AssetImporter;
 
 namespace OpenKh.Unity.Tools.IdxImg
 {
     public class MainWindow : IdxManagerWindow
     {
-        //  Toolbar
-        private ToolbarButton m_OpenFile;
-        private ToolbarButton m_ImportAssets;
 
-        /*
-        private NativeArray<int> m_ExtractQueue;
-        private NativeArray<bool> m_ExtractResults;
-        private NativeArray<int> m_ExportQueue;
-        private NativeArray<bool> m_ExportResults;
-        */
+        #region Menu entry
 
-        [MenuItem("OpenKh/Asset Importer")]
+        [MenuItem("OpenKh/Asset Importer", false, 0)]
         public static void ShowAssetImporter()
         {
             var wnd = GetWindow<MainWindow>();
             wnd.titleContent = new GUIContent("OpenKh Asset Importer");
         }
+
+        #endregion
+
+        #region Initialization
 
         public void CreateGUI()
         {
@@ -49,9 +40,6 @@ namespace OpenKh.Unity.Tools.IdxImg
         {
             base.Init(root);
             HideEntryView();
-
-            m_OpenFile = m_RootElement.Q<ToolbarButton>("OpenFiles");
-            m_ImportAssets = m_RootElement.Q<ToolbarButton>("ImportAssets");
         }
         private void BindViews()
         {
@@ -85,12 +73,18 @@ namespace OpenKh.Unity.Tools.IdxImg
                 }
             };
         }
-        private void AddListeners()
+        protected override void AddListeners()
         {
+            base.AddListeners();
+
             m_Tree.onSelectionChange += UpdateEntryView;
             m_OpenFile.clicked += OpenIdxImgFiles;
             m_ImportAssets.clicked += ImportAssets;
         }
+
+        #endregion
+
+        #region Event handlers
 
         private void ToggleImport(ChangeEvent<bool> ev)
         {
@@ -103,20 +97,6 @@ namespace OpenKh.Unity.Tools.IdxImg
             
             m_Tree.RefreshItems();
         }
-
-        private void UpdateEntryView(IEnumerable<object> selection)
-        {
-            var active = selection.OfType<FileViewModel>().FirstOrDefault();
-
-            if (active is null)
-            {
-                HideEntryView();
-                return;
-            }
-
-            SetEntryView(active);
-        }
-
         protected void ImportAssets()
         {
             if (Root == null || Root.Count == 0)
@@ -146,63 +126,18 @@ namespace OpenKh.Unity.Tools.IdxImg
                 return;
             }
 
-            var extractStatus = new ExtractStatus
-            {
-                current = -1,
-                total = @checked.Count,
-            };
+            if (HasMdlxMsetPair(@checked) && !EditorUtility.DisplayDialog("Asset import",
+                    "Importing models with animations can take a long time. Do you want to continue?", "Continue",
+                    "Cancel"))
+                return;
 
-            try
-            {
-                //  Extract checked assets
-                foreach (var fvm in @checked)
-                {
-                    //Debug.Log($"Extracting {fvm.Name} ..");
-
-                    extractStatus.fileName = fvm.FullName;
-                    extractStatus.current++;
-
-                    if (Utils.DisplayCancellableExtractProgress(ExtractState.Processing, extractStatus))
-                        throw new OperationCanceledException();
-
-                    AssetImporter.ExtractAsset(fvm);
-                }
-
-                if (Utils.DisplayCancellableExtractProgress(ExtractState.Finished, extractStatus))
-                    throw new OperationCanceledException();
-
-                //  Export all supported extracted assets
-                foreach (var asset in AssetImporter.ExportableAssets)
-                {
-                    //Debug.Log($"Exporting {asset} ..");
-                    MdlxConvert.ToAset(asset, Utils.DisplayExportProgress, out _);
-                }
-            }
-            catch (Exception ex)
-            {
-                if (ex is OperationCanceledException)
-                {
-                    Debug.Log("Asset import cancelled by user.");
-                }
-                else
-                {
-                    Debug.LogWarning("Asset import failed!");
-                    Debug.LogError(ex);
-                }
-            }
-            finally
-            {
-                //tokenSource.Dispose();
-                ExtractQueue.Active.Clear();
-                ExportQueue.Active.Clear();
-                EditorUtility.ClearProgressBar();
-            }
-
-            EditorUtility.ClearProgressBar();
-            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
-
-            Debug.Log("Import done.");
+            //  Check for MDLX/MSET file pairs
+            //  Warn user for long import time
+            AssetImporter.ImportAssets(@checked);
         }
+
+        #endregion
+
     }
 }
 
