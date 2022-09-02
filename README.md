@@ -2,7 +2,7 @@
 Unity integration of [OpenKh](https://github.com/OpenKH/OpenKh).
 
 ## Installation
-To install the package, simply clone the repository into your Unity project's `Assets` folder and run `git submodule update --init --recursive --depth 1` to clone all included submodules. Additionally, Noesis needs to be installed, which makes this package work reasonably only on Windows. Check out the *Dependencies* section for further info.
+To install the package, simply clone the repository into your Unity project's `Assets` folder and run `git submodule update --init --recursive --depth 1` to clone all included submodules. Additionally, Noesis needs to be installed, which makes this package work reasonably only on Windows. Check out the [Dependencies](#dependencies) section for further info.
 
 The package is planned to be available in the Unity asset store at some point in the future.
 
