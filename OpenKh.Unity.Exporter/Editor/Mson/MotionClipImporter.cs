@@ -3,44 +3,35 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using OpenKh.Kh2;
-using OpenKh.Unity.Exporter.Mson;
+using OpenKh.Unity.Settings;
 using UnityEditor;
 using UnityEngine;
 
-namespace OpenKh.Unity.Aset.Motion
+namespace OpenKh.Unity.Exporter.Mson
 {
     public class MotionClipImporter : AssetPostprocessor
     {
-
-        [MenuItem("OpenKh/Settings/Rename Motion Clips", false)]
-        private static void ToggleMotionNames()
-        {
-            IsActive = !IsActive;
-
-            var stat = IsActive ? "enabled" : "disabled";
-            Debug.Log($"Motion Names {stat}. Please reimport models to apply/revert changes.");
-        }
-
-        [MenuItem("OpenKh/Settings/Rename Motion Clips", true)]
-        private static bool ValidateToggleMotionNames()
-        {
-            Menu.SetChecked("OpenKh/Settings/Rename Motion Clips", IsActive);
-            return true;
-        }
-
-        /// <summary>
-        /// Defines the post processor's current state
-        /// </summary>
-        public static bool IsActive
-        {
-            get => EditorPrefs.GetBool("OpenKhMotionRename", false);
-            private set => EditorPrefs.SetBool("OpenKhMotionRename", value);
-        }
+        #region Fields
 
         private ModelImporter importer;
         private MsonFile mson;
-        private Dictionary<string, MotionSet.MotionName> MotionTagReg { get; } = new();
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Get the post processor's current state
+        /// </summary>
+        public static bool IsActive => OpenKhPrefs.GetBool("MsonRename", true);
+        /// <summary>
+        /// Regex for matching animation clip names by which moveset motion names can be retrieved
+        /// </summary>
         private static Regex MotionTagValidator { get; } = new(@"^(\w\d{3}(?:_?))+$");
+
+        #endregion
+
+        #region Unity methods
 
         //  Initialize processor before import
         private void OnPreprocessAnimation()
@@ -62,34 +53,7 @@ namespace OpenKh.Unity.Aset.Motion
             {
                 Debug.LogWarning($"Motion JSON for '{importer.assetPath}' could not be parsed.");
             }
-
-            //  TODO: Remove fragments
-            #region Old code fragments
-            
-            /*
-            if (importer.clipAnimations.Length == 0)
-                return;
-
-            var anims = importer.defaultClipAnimations;
-
-            foreach (var clip in anims)
-            {
-                if (!TryGetClipName(clip, out var clipName))
-                    continue;
-
-                Debug.Log($"Renaming animation clip: {clip.name} -> {clipName}");
-                clip.name = clipName;
-            }
-
-            importer.clipAnimations = anims;
-
-            //Debug.Log("Motion Name processor initialized.");
-        */
-
-            #endregion
-
         }
-
         //  Process animation clips after importing
         private void OnPostprocessAnimation(GameObject root, AnimationClip clip)
         {
@@ -99,6 +63,14 @@ namespace OpenKh.Unity.Aset.Motion
             RenameAnimationClip(root, ref clip);
         }
 
+        #endregion
+
+        /// <summary>
+        /// Try to get the corresponding moveset motion name of the specified animation clip
+        /// </summary>
+        /// <param name="clip">Animation clip to get the corresponding moveset name</param>
+        /// <param name="clipName">When this method returns, contains the moveset name of the animation clip; null if no moveset name is found</param>
+        /// <returns>True if a corresponding moveset name was found</returns>
         private bool TryGetClipName(object clip, out string clipName)
         {
             var cname = clip.GetType().GetProperty("name")?.GetValue(clip, null) as string;
@@ -132,8 +104,12 @@ namespace OpenKh.Unity.Aset.Motion
             clipName = $"{motionInfo.Slot:D3}-{motionInfo.Name}";
             return true;
         }
-
-        private void RenameAnimationClip(GameObject root, ref AnimationClip clip)
+        /// <summary>
+        /// Renames the specified animation clip of the <param name="root">root object</param> to its corresponding moveset motion name.
+        /// </summary>
+        /// <param name="root">Object/asset containing the specified animation clip</param>
+        /// <param name="clip">The animation clip being renamed</param>
+        private void RenameAnimationClip(Object root, ref AnimationClip clip)
         {
             if (!TryGetClipName(clip, out var clipName))
                 return;

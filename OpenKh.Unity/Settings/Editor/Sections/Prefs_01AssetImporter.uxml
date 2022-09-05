@@ -9,4 +9,8 @@
         <ui:Label tabindex="-1" text="External tools" display-tooltip-when-elided="true" name="ExternalToolsPrefsTitle" class="h2" />
         <ui:TextField picking-mode="Ignore" label="Noesis executable" value="{ProgramFiles}\Noesis\Noesis.exe" text="{ProgramFiles}\Noesis\Noesis.exe" name="NoesisBinPath" is-delayed="true" max-length="260" tooltip="Path to your locally installed Noesis binary. Use {ProgramFiles} to automatically interpolate the path to your program files directory." />
     </ui:VisualElement>
+    <ui:VisualElement name="MsetPrefs" class="ctrl-panel panel-border">
+        <ui:Label tabindex="-1" text="MSET import" display-tooltip-when-elided="true" name="MsetPrefsTitle" class="h2" />
+        <ui:Toggle picking-mode="Ignore" label="Rename animation clips" value="true" name="MsonRename" tooltip="Rename animation clips to their corresponding moveset motion names?" />
+    </ui:VisualElement>
 </ui:UXML>

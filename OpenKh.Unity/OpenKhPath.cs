@@ -27,11 +27,11 @@ namespace OpenKh.Unity
         /// <summary>
         /// Path to the base folder of the OpenKh package
         /// </summary>
-        public static string PackageRoot => Path.Combine(AssetDir, _packageName);
+        public static string PackageRoot => Path.Combine(AssetDir, OpenKhPrefs.GetString("PackageName", _packageName));
         /// <summary>
         /// Path to the base folder of temporary files created by OpenKh
         /// </summary>
-        public static string TempDir => Path.Combine(TempCacheDir, _packageName);
+        public static string TempDir => Path.Combine(TempCacheDir, OpenKhPrefs.GetString("PackageName", _packageName));
         /// <summary>
         /// Path to the folder where imported assets are saved
         /// </summary>

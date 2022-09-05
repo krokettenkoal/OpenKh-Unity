@@ -1,4 +1,8 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/OpenKh/OpenKh.Unity/OpenKhTheme.uss?fileID=7433441132597879392&amp;guid=4588fd1e689ee7349b1796e713a84678&amp;type=3#OpenKhTheme" />
     <ui:Label tabindex="-1" text="General" display-tooltip-when-elided="true" class="pref-section-title h1" />
+    <ui:VisualElement name="PackagePrefs" class="ctrl-panel panel-border">
+        <ui:Label tabindex="-1" text="Package" display-tooltip-when-elided="true" name="PackagePrefsTitle" class="h2" />
+        <ui:TextField picking-mode="Ignore" label="Package folder" value="OpenKh" text="OpenKh" name="PackageName" is-delayed="true" max-length="64" tooltip="Path to the folder containing OpenKh, relative to the project's Assets folder. Change this value if you installed OpenKh into a subfolder or renamed the package's folder." />
+    </ui:VisualElement>
 </ui:UXML>

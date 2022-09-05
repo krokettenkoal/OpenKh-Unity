@@ -214,7 +214,7 @@ namespace OpenKh.Unity.Settings
             ActiveSection?.Container.Query<TextField>().ForEach(field =>
             {
                 if (OpenKhPrefs.TryGet(field.name, out string s))
-                    field.value = s;
+                    field.value = s.Trim(' ');
             });
         }
         /// <summary>
