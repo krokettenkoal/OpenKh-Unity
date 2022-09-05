@@ -1,3 +1,40 @@
 #IdxImgEntry {
     padding: 20px;
 }
+
+#BarEntries {
+    max-height: 200px;
+    overflow: scroll;
+    margin-top: 5px;
+}
+
+#BarEntries MultiColumnCollectionHeader {
+    -unity-font-style: bold;
+}
+
+.ctrl-multi > #BarTitle {
+    flex-grow: 1;
+}
+
+.ctrl-multi > #FilterDummies {
+    flex-grow: 0;
+}
+
+#FilterDummies {
+    -unity-text-align: middle-right;
+}
+
+#FilterDummies Label {
+    padding-right: 5px;
+}
+
+#IsImportedImg {
+    width: 22px;
+    height: 17px;
+    max-width: 22px;
+    max-height: 17px;
+    background-image: url('project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/res/kh-checkmark.png?fileID=2800000&guid=953616924d5d87b488bccc661fdc39d7&type=3#kh-checkmark');
+    flex-shrink: 0;
+    padding: 0;
+    margin-left: 7px;
+}

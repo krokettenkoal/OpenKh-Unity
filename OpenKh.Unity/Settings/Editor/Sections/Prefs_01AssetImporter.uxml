@@ -1,0 +1,12 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity/OpenKhTheme.uss?fileID=7433441132597879392&amp;guid=4588fd1e689ee7349b1796e713a84678&amp;type=3#OpenKhTheme" />
+    <ui:Label tabindex="-1" text="Asset importer" display-tooltip-when-elided="true" class="pref-section-title h1" />
+    <ui:VisualElement name="FolderPrefs" class="ctrl-panel panel-border">
+        <ui:Label tabindex="-1" text="Folder names" display-tooltip-when-elided="true" name="FolderPrefsTitle" class="h2" />
+        <ui:TextField picking-mode="Ignore" label="Asset import folder" value="OpenKh Imported Assets" text="OpenKh Imported Assets" name="AssetImportDirName" is-delayed="true" max-length="64" tooltip="Name of the folder where your imported assets will be stored by Asset Importer." />
+    </ui:VisualElement>
+    <ui:VisualElement name="ExternalToolsPrefs" class="ctrl-panel panel-border">
+        <ui:Label tabindex="-1" text="External tools" display-tooltip-when-elided="true" name="ExternalToolsPrefsTitle" class="h2" />
+        <ui:TextField picking-mode="Ignore" label="Noesis executable" value="{ProgramFiles}\Noesis\Noesis.exe" text="{ProgramFiles}\Noesis\Noesis.exe" name="NoesisBinPath" is-delayed="true" max-length="260" tooltip="Path to your locally installed Noesis binary. Use {ProgramFiles} to automatically interpolate the path to your program files directory." />
+    </ui:VisualElement>
+</ui:UXML>

@@ -5,8 +5,8 @@ using OpenKh.Kh2;
 using OpenKh.Unity.Exporter.Aset;
 using OpenKh.Unity.Exporter.Mson;
 using OpenKh.Unity.Exporter.Progress;
+using OpenKh.Unity.Tools.IdxImg;
 using OpenKh.Unity.Tools.IdxImg.IO;
-using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using UnityEngine;
 
 namespace OpenKh.Unity.Exporter
@@ -76,7 +76,7 @@ namespace OpenKh.Unity.Exporter
         public static bool ToMson(string msetPath, Func<OperationStatus, bool> onProgress, out string outFile, int phase = 0)
         {
             //  File does not exist or is not an MSET file
-            if (!File.Exists(msetPath) || ViewModelExtensions.GetAssetFormat(msetPath) != AssetFormat.Mset)
+            if (!File.Exists(msetPath) || IdxEntryExtensions.GetAssetFormat(msetPath) != AssetFormat.Mset)
             {
                 Debug.LogWarning($"MSON export failed: {Path.GetFileName(msetPath)} not found or not an MSET file.");
                 outFile = null;

@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity/OpenKhTheme.uss?fileID=7433441132597879392&amp;guid=4588fd1e689ee7349b1796e713a84678&amp;type=3#OpenKhTheme" />
+    <ui:Label tabindex="-1" text="General" display-tooltip-when-elided="true" class="pref-section-title h1" />
+</ui:UXML>

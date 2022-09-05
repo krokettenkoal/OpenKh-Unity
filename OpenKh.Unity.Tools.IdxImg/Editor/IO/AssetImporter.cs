@@ -20,11 +20,22 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         public static string ActiveImgPath { get; set; }
         public static Img ActiveImg { get; set; }
         public static int CurrentPhase { get; private set; }
-
+        private static Dictionary<AssetFormat, ImportFormat> ImportFormats = new()
+        {
+            { AssetFormat.Mdlx, ImportFormat.Fbx },
+            { AssetFormat.Mset, ImportFormat.Json },
+        };
         public static AssetFormat ExtractableFormats => AssetFormat.Mdlx | AssetFormat.Mset;
         public static AssetFormat ExportableFormats => AssetFormat.Mdlx | AssetFormat.Mset;
+
         public static IEnumerable<string> ExtractedAssets =>
-            Directory.GetFiles(PackageInfo.TempDir, "*.*", SearchOption.AllDirectories);
+            Directory.Exists(OpenKhPath.TempDir)
+                ? Directory.GetFiles(OpenKhPath.TempDir, "*.*", SearchOption.AllDirectories)
+                : Array.Empty<string>();
+        public static IEnumerable<string> ImportedAssets =>
+            Directory.Exists(OpenKhPath.AssetImportDir)
+                ? Directory.GetFiles(OpenKhPath.AssetImportDir, "*.*", SearchOption.AllDirectories)
+                : Array.Empty<string>();
         public static IEnumerable<string> ExportableAssets => ExtractedAssets.Where(IsExportable);
 
         #endregion
@@ -32,16 +43,29 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         #region Helper methods
 
         private static bool IsExtractable(FileViewModel fvm) =>
-            ExtractableFormats.HasFlag(fvm.GetAssetFormat());
+            ExtractableFormats.HasFlag(fvm.Entry.GetAssetFormat());
         private static bool IsExtractable(string filePath) =>
-            ExtractableFormats.HasFlag(ViewModelExtensions.GetAssetFormat(filePath));
+            ExtractableFormats.HasFlag(IdxEntryExtensions.GetAssetFormat(filePath));
         private static bool IsExportable(string filePath) =>
-            ExportableFormats.HasFlag(ViewModelExtensions.GetAssetFormat(filePath));
+            ExportableFormats.HasFlag(IdxEntryExtensions.GetAssetFormat(filePath));
+
+        public static bool IsImported(FileViewModel fvm)
+        {
+            var format = fvm.Entry.GetAssetFormat();
+
+            if (!ImportFormats.TryGetValue(format, out var iFormat))
+                return false;
+
+            var ext = "." + iFormat.ToString().ToLowerInvariant();
+            var assetPath = GetExportPath(fvm, ext);
+
+            return ImportedAssets.Contains(assetPath);
+        }
 
         public static string GetExtractPath(FileViewModel fvm, string extension = null)
         {
             var p = Path.Combine(
-                PackageInfo.TempDir,
+                OpenKhPath.TempDir,
                 Path.GetFileNameWithoutExtension(ActiveIdxPath),
                 fvm.FullName!
             );
@@ -51,7 +75,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         public static string GetExportPath(FileViewModel fvm, string extension = null, bool createSubfolder = true)
         {
             var basePath = Path.Combine(
-                PackageInfo.AssetImportDir,
+                OpenKhPath.AssetImportDir,
                 Path.GetFileNameWithoutExtension(ActiveIdxPath));
 
             string subPath;
@@ -73,7 +97,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         }
         public static string GetExportPath(string filePath, string extension = null, bool createSubfolder = true)
         {
-            filePath = filePath.Replace(PackageInfo.TempDir, PackageInfo.AssetImportDir);
+            filePath = filePath.Replace(OpenKhPath.TempDir, OpenKhPath.AssetImportDir);
 
             //  Insert subfolder into path
             if (createSubfolder)
@@ -83,6 +107,14 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
                     Path.GetFileName(filePath));
 
             return string.IsNullOrEmpty(extension) ? filePath : Path.ChangeExtension(filePath, extension);
+        }
+
+        public static void Reset()
+        {
+            ActiveIdxPath = null;
+            ActiveImgPath = null;
+            ActiveImg = null;
+            CurrentPhase = 0;
         }
 
         #endregion
@@ -145,7 +177,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         /// </summary>
         /// <returns>True if at least one asset failed or was cancelled, false if the export was successful.</returns>
         private static bool ExportAssets() =>
-            ExportableAssets.Any(asset => ViewModelExtensions.GetAssetFormat(asset) switch
+            ExportableAssets.Any(asset => IdxEntryExtensions.GetAssetFormat(asset) switch
             {
                 AssetFormat.Mdlx => !MotionExport.ToAset(asset, OpProgress.Cancellable, out _, CurrentPhase),
                 AssetFormat.Mset => !MotionExport.ToMson(asset, OpProgress.Cancellable, out _, CurrentPhase),
@@ -188,7 +220,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
         /// <returns>True if the operation was successful, false if it failed or was cancelled by the user</returns>
         private static bool CleanUp()
         {
-            if (!Directory.Exists(PackageInfo.TempDir))
+            if (!Directory.Exists(OpenKhPath.TempDir))
                 return true;
 
             var total = ExtractedAssets.Count();
@@ -216,7 +248,7 @@ namespace OpenKh.Unity.Tools.IdxImg.IO
                 File.Delete(asset);
             }
 
-            Directory.Delete(PackageInfo.TempDir, true);
+            Directory.Delete(OpenKhPath.TempDir, true);
 
             status.State = OperationState.Finished;
             status.Current = total;

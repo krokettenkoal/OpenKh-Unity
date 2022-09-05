@@ -41,8 +41,10 @@ namespace OpenKh.Unity.Tools.IdxImg
             base.Init(root);
             HideEntryView();
         }
-        private void BindViews()
+        protected override void BindViews()
         {
+            base.BindViews();
+
             m_Tree.columns["name"].makeCell = () => new Label();
             m_Tree.columns["import"].makeCell = () => new Toggle();
 
@@ -134,6 +136,8 @@ namespace OpenKh.Unity.Tools.IdxImg
             //  Check for MDLX/MSET file pairs
             //  Warn user for long import time
             AssetImporter.ImportAssets(@checked);
+
+            SetEntryView(ActiveModel);
         }
 
         #endregion

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using OpenKh.Unity;
 using OpenKh.Unity.Exporter.Progress;
 using OpenKh.Unity.Extensions;
 
@@ -12,14 +13,19 @@ namespace Noesis
         None = 0,
         FbxMultitake = 1 << 0,
     }
+    /// <summary>
+    /// .NET wrapper for Noesis
+    /// </summary>
     public class NoesisClient
     {
         private string _binPath;
         private ProcessStartInfo _startInfo;
         private string BaseArguments => $"/S /C \"\"{_binPath}\" ?cmode";
 
-        public NoesisClient() : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Noesis", "Noesis.exe")) { }
-        public NoesisClient(string binPath)
+        #region Constructors
+
+        public NoesisClient() : this(Path.Combine(OpenKhPath.NoesisBin)) { }
+        private NoesisClient(string binPath)
         {
             if (!File.Exists(binPath))
                 throw new FileNotFoundException($"Noesis binary not found: {binPath}");
@@ -33,11 +39,16 @@ namespace Noesis
             };
         }
 
+        #endregion
+
+        #region Public methods
+
         /// <summary>
         /// Export/convert a file to the file format specified in the destination path using Noesis.
         /// </summary>
         /// <param name="srcPath">Path to the source file being converted</param>
         /// <param name="destPath">Output path of the resulting file</param>
+        /// <param name="onProgress">Callback function for handling export progress</param>
         /// <param name="advCmd">Advanced Noesis command flags</param>
         /// <returns>True if the export was successful</returns>
         public bool Export(string srcPath, string destPath, Func<OperationStatus, bool> onProgress, AdvancedCommands advCmd = AdvancedCommands.FbxMultitake)
@@ -110,5 +121,8 @@ namespace Noesis
 
             return true;
         }
+
+        #endregion
+
     }
 }

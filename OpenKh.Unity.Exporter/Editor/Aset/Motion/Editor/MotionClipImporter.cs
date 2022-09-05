@@ -6,14 +6,13 @@ using OpenKh.Kh2;
 using OpenKh.Unity.Exporter.Mson;
 using UnityEditor;
 using UnityEngine;
-using Xe;
 
 namespace OpenKh.Unity.Aset.Motion
 {
     public class MotionClipImporter : AssetPostprocessor
     {
 
-        [MenuItem("OpenKh/Preferences/Rename Motion Clips", false)]
+        [MenuItem("OpenKh/Settings/Rename Motion Clips", false)]
         private static void ToggleMotionNames()
         {
             IsActive = !IsActive;
@@ -22,10 +21,10 @@ namespace OpenKh.Unity.Aset.Motion
             Debug.Log($"Motion Names {stat}. Please reimport models to apply/revert changes.");
         }
 
-        [MenuItem("OpenKh/Preferences/Rename Motion Clips", true)]
+        [MenuItem("OpenKh/Settings/Rename Motion Clips", true)]
         private static bool ValidateToggleMotionNames()
         {
-            Menu.SetChecked("OpenKh/Preferences/Rename Motion Clips", IsActive);
+            Menu.SetChecked("OpenKh/Settings/Rename Motion Clips", IsActive);
             return true;
         }
 

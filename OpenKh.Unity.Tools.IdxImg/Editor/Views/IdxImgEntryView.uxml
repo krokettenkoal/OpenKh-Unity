@@ -1,20 +1,37 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/MainWindow.uss?fileID=7433441132597879392&amp;guid=58926d26d0835cb46866ec67732fb5ca&amp;type=3#MainWindow" />
     <Style src="project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/Views/IdxImgEntryView.uss?fileID=7433441132597879392&amp;guid=7c7bd3651348a804da551bc84b815f12&amp;type=3#IdxImgEntryView" />
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity/OpenKhTheme.uss?fileID=7433441132597879392&amp;guid=4588fd1e689ee7349b1796e713a84678&amp;type=3#OpenKhTheme" />
     <ui:ScrollView name="IdxImgEntry">
-        <ui:Label tabindex="-1" text="OpenKh Asset Importer" display-tooltip-when-elided="true" name="Title" class="h1" />
-        <ui:VisualElement name="IdxImgProperties" class="ctrl-panel">
+        <ui:VisualElement class="title-multi">
+            <ui:Label tabindex="-1" text="OpenKh Asset Importer" display-tooltip-when-elided="true" name="Title" class="h1" />
+            <ui:VisualElement name="IsImportedImg" tooltip="Asset has been imported" class="hidden" />
+        </ui:VisualElement>
+        <ui:VisualElement name="IdxImgProperties" class="ctrl-panel panel-border">
             <ui:Label tabindex="-1" text="Properties" display-tooltip-when-elided="true" name="PropertiesTitle" class="h2" />
-            <ui:TextField picking-mode="Ignore" label="Full path" value="unknown" text="unknown" name="FullName" />
-            <ui:LongField label="Physical offset" value="0" name="PhysicalOffset" />
+            <ui:TextField picking-mode="Ignore" label="Full path" value="unknown" text="unknown" name="FullName" readonly="true" />
+            <ui:LongField label="Physical offset" value="0" name="PhysicalOffset" readonly="true" />
             <ui:VisualElement class="ctrl-multi">
-                <ui:LongField label="Physical size" value="0" name="PhysicalSize" />
-                <ui:LongField label="Uncompressed size" value="0" name="UncompressedSize" />
+                <ui:LongField label="Physical size" value="0" name="PhysicalSize" readonly="true" />
+                <ui:LongField label="Uncompressed size" value="0" name="UncompressedSize" readonly="true" />
             </ui:VisualElement>
             <ui:VisualElement class="ctrl-multi">
                 <ui:Toggle label="Compress" name="Compress" />
                 <ui:Toggle label="Stream" name="Stream" />
             </ui:VisualElement>
+        </ui:VisualElement>
+        <ui:VisualElement name="IdxImgBar" class="ctrl-panel">
+            <ui:VisualElement class="ctrl-multi">
+                <ui:Label tabindex="-1" text="BAR entries" display-tooltip-when-elided="true" name="BarTitle" class="h2" />
+                <ui:Toggle label="Filter dummies" name="FilterDummies" />
+            </ui:VisualElement>
+            <ui:MultiColumnListView fixed-item-height="20" name="BarEntries" show-alternating-row-backgrounds="All" sorting-enabled="false" reorderable="false" show-border="true">
+                <ui:Columns>
+                    <ui:Column name="EntryName" title="Name" width="100" />
+                    <ui:Column name="EntryType" title="Type" width="60" />
+                    <ui:Column name="EntryDescription" title="Description" width="300" />
+                </ui:Columns>
+            </ui:MultiColumnListView>
         </ui:VisualElement>
     </ui:ScrollView>
 </ui:UXML>

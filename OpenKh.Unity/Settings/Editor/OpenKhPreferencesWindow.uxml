@@ -1,8 +1,4 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
-    <Style src="project://database/Assets/OpenKh/OpenKh.Unity.Tools.IdxImg/Editor/MainWindow.uss?fileID=7433441132597879392&amp;guid=58926d26d0835cb46866ec67732fb5ca&amp;type=3#MainWindow" />
+    <Style src="project://database/Assets/OpenKh/OpenKh.Unity/Settings/Editor/OpenKhPreferencesWindow.uss?fileID=7433441132597879392&amp;guid=effae6f9f86026041ad64fcea2709be2&amp;type=3#OpenKhPreferencesWindow" />
     <Style src="project://database/Assets/OpenKh/OpenKh.Unity/OpenKhTheme.uss?fileID=7433441132597879392&amp;guid=4588fd1e689ee7349b1796e713a84678&amp;type=3#OpenKhTheme" />
-    <uie:Toolbar>
-        <uie:ToolbarButton text="Open IDX/IMG.." name="OpenFiles" />
-        <uie:ToolbarButton text="Import selected assets" name="ImportAssets" />
-    </uie:Toolbar>
 </ui:UXML>

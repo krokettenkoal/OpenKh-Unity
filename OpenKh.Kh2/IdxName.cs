@@ -8,7 +8,7 @@ namespace OpenKh.Kh2
 {
     public class IdxName
     {
-        private static string _filenameDictionary = Path.Combine(PackageInfo.PackageRoot, "OpenKh.Kh2/resources/kh2idx.txt");
+        private static string _filenameDictionary = Path.Combine(OpenKhPath.PackageRoot, "OpenKh.Kh2/resources/kh2idx.txt");
 
         public static string[] Names = File.ReadAllLines(_filenameDictionary);
 

@@ -5,7 +5,6 @@ using System.Linq;
 using OpenKh.Kh2;
 using OpenKh.Unity.Exporter.Progress;
 using OpenKh.Unity.Tools.IdxImg.Interfaces;
-using OpenKh.Unity.Tools.IdxImg.IO;
 using OpenKh.Unity.Tools.IdxImg.ViewModels;
 using UnityEngine;
 using UnityEditor;
@@ -20,7 +19,6 @@ namespace OpenKh.Unity.Tools.IdxImg
     {
         #region Fields
 
-        
         //  Visual tree assets
         [SerializeField]
         protected VisualTreeAsset m_VisualTreeAsset = default;
@@ -48,6 +46,7 @@ namespace OpenKh.Unity.Tools.IdxImg
         protected Label m_Title;
 
         //  Entry property controls
+        protected VisualElement m_IsImported;
         protected TextField m_FullName;
         protected LongField m_PhysicalOffset;
         protected LongField m_PhysicalSize;
@@ -55,6 +54,12 @@ namespace OpenKh.Unity.Tools.IdxImg
         protected Toggle m_Compress;
         protected Toggle m_Stream;
         protected TextField m_Search;
+
+        //  BAR entries
+        protected MultiColumnListView m_BarEntries;
+        protected Label m_BarTitle;
+        protected Toggle m_FilterDummies;
+        private string m_BarTitleOriginal;
 
         //  File streams
         protected Stream _imgStream;
@@ -64,6 +69,17 @@ namespace OpenKh.Unity.Tools.IdxImg
         #region Properties
 
         internal List<RootViewModel> Root { get; private set; }
+        public FileViewModel ActiveModel { get; protected set; }
+        public Bar ActiveBar { get; protected set; }
+        public bool FilterDummies
+        {
+            get => m_FilterDummies.value;
+            set
+            {
+                m_FilterDummies.value = value;
+                UpdateDetailView(value);
+            }
+        }
 
         #endregion
 
@@ -75,34 +91,81 @@ namespace OpenKh.Unity.Tools.IdxImg
             m_RootElement = m_VisualTreeAsset.Instantiate();
             root.Add(m_RootElement);
 
+            //  Instantiate views
             m_MainPanel = new TwoPaneSplitView(0, 260, TwoPaneSplitViewOrientation.Horizontal);
             m_TreeView = m_TreeViewAsset.Instantiate();
             m_EntryView = m_EntryViewAsset.Instantiate();
             m_TreeSearch = m_TreeSearchAsset.Instantiate();
 
+            //  Assemble main view
             m_TreeView.Add(m_TreeSearch);
             m_MainPanel.Add(m_TreeView);
             m_MainPanel.Add(m_EntryView);
             rootVisualElement.Add(m_MainPanel);
+
+            //  Query main containers
             m_Tree = m_TreeView.Q<MultiColumnTreeView>("IdxImgTree");
             m_Entry = m_EntryView.Q<VisualElement>("IdxImgEntry");
             m_Search = m_TreeSearch.Q<TextField>("IdxImgTreeSearch");
+            m_BarEntries = m_EntryView.Q<MultiColumnListView>("BarEntries");
 
+            //  Query toolbar buttons
             m_OpenFile = m_RootElement.Q<ToolbarButton>("OpenFiles");
             m_ImportAssets = m_RootElement.Q<ToolbarButton>("ImportAssets");
 
+            //  Main title
             m_Title = m_Entry.Q<Label>("Title");
 
+            //  Property controls
+            m_IsImported = m_Entry.Q<VisualElement>("IsImportedImg");
             m_FullName = m_Entry.Q<TextField>("FullName");
             m_PhysicalOffset = m_Entry.Q<LongField>("PhysicalOffset");
             m_PhysicalSize = m_Entry.Q<LongField>("PhysicalSize");
             m_UncompressedSize = m_Entry.Q<LongField>("UncompressedSize");
             m_Compress = m_Entry.Q<Toggle>("Compress");
             m_Stream = m_Entry.Q<Toggle>("Stream");
+
+            //  BAR entries
+            m_BarTitle = m_EntryView.Q<Label>("BarTitle");
+            m_BarTitleOriginal = m_BarTitle.text;
+            m_FilterDummies = m_EntryView.Q<Toggle>("FilterDummies");
         }
         protected virtual void AddListeners()
         {
             m_Search.RegisterValueChangedCallback(SearchTree);
+            m_FilterDummies.RegisterValueChangedCallback(ev => UpdateDetailView(ev.newValue));
+        }
+
+        protected virtual void BindViews()
+        {
+            m_BarEntries.columns["EntryName"].makeCell = () => new Label();
+            m_BarEntries.columns["EntryType"].makeCell = () => new Label();
+            m_BarEntries.columns["EntryDescription"].makeCell = () => new Label();
+
+            m_BarEntries.columns["EntryName"].bindCell = (element, index) =>
+            {
+                if (element is Label l && m_BarEntries.itemsSource[index] is Bar.Entry entry)
+                {
+                    l.AddToClassList("bold");
+                    l.text = entry.Name;
+                }
+            };
+
+            m_BarEntries.columns["EntryType"].bindCell = (element, index) =>
+            {
+                if (element is Label l && m_BarEntries.itemsSource[index] is Bar.Entry entry)
+                    l.text = entry.Type.ToString();
+            };
+
+            m_BarEntries.columns["EntryDescription"].bindCell = (element, index) =>
+            {
+                if (element is Label l && m_BarEntries.itemsSource[index] is Bar.Entry entry)
+                {
+                    l.AddToClassList("italic");
+                    if(entry.Type == Bar.EntryType.Anb)
+                        l.text = ((MotionSet.MotionName)(index / 4)).ToString();
+                }
+            };
         }
 
         #endregion
@@ -187,11 +250,50 @@ namespace OpenKh.Unity.Tools.IdxImg
             m_Compress?.SetValueWithoutNotify(fvm.IsCompressed);
             m_Stream?.SetValueWithoutNotify(fvm.IsStream);
 
-            m_Entry.RemoveFromClassList("invisible");
+            m_IsImported?.EnableInClassList("hidden", !AssetImporter.IsImported(fvm));
+
+            SetDetailView(fvm.Entry);
+
+            m_Entry.RemoveFromClassList("hidden");
+            ActiveModel = fvm;
+
         }
         protected void HideEntryView()
         {
-            m_Entry.AddToClassList("invisible");
+            ActiveModel = null;
+            m_Entry.AddToClassList("hidden");
+        }
+
+        protected void SetDetailView(Idx.Entry entry)
+        {
+            //  Retrieve file stream
+            var stream = OpenFileFromIdx(entry);
+
+            //  Validate
+            if (!Bar.IsValid(stream))
+            {
+                Debug.LogWarning($"Cannot view details of {entry.GetFullName()}: Not a valid BAR file.");
+                return;
+            }
+
+            ActiveBar = Bar.Read(stream);
+
+            if(entry.IsMset())
+                m_FilterDummies.RemoveFromClassList("hidden");
+            else
+                m_FilterDummies.AddToClassList("hidden");
+
+            UpdateDetailView(FilterDummies);
+        }
+
+        protected void UpdateDetailView(bool filterDummies)
+        {
+            var src = filterDummies ? ActiveBar.Where(e => e.Name != "DUMM").ToList() : ActiveBar;
+
+            m_BarEntries.itemsSource = src;
+            m_BarEntries.Rebuild();
+
+            m_BarTitle.text = $"{m_BarTitleOriginal} ({src.Count})";
         }
 
         #endregion
@@ -245,6 +347,9 @@ namespace OpenKh.Unity.Tools.IdxImg
             using var idxStream = File.OpenRead(idxFilePath);
             if (!Idx.IsValid(idxStream))
                 throw new ArgumentException($"The file '{idxFilePath}' is not a valid IDX file.");
+
+            //  Clear previous import data
+            AssetImporter.Reset();
 
             //  PROGRESS BAR
             status.State = OperationState.Initialization;
@@ -316,7 +421,7 @@ namespace OpenKh.Unity.Tools.IdxImg
 
         protected static bool HasMdlxMsetPair(IEnumerable<FileViewModel> assets)
         {
-            var mdlx = assets.Where(fvm => fvm.IsMdlx());
+            var mdlx = assets.Where(fvm => fvm.Entry.IsMdlx());
             return mdlx.Any(mvm => assets.Any(fvm => fvm.FullName == Path.ChangeExtension(mvm.FullName, ".mset")));
         }
         
